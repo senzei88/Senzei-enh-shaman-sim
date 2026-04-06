@@ -2186,82 +2186,144 @@ function extractItemsFromHtml(doc, htmlText) {
   return Array.from(foundMap.values());
 }
 
-// Item ID map for matching armory IDs to our local gear DB
-// We build this from the gear name → armory item ID mapping
-// Since our DB uses names not IDs, we do fuzzy name matching
-var ARMORY_ITEM_ID_MAP = {}; // populated below
-
-function buildArmoryIdMap() {
-  // Known Turtle WoW item IDs for Enhancement Shaman items
-  // These are the most commonly equipped items — extend as needed
-  var knownIds = {
-    // Head
-    216415: { slot: 'Head', name: 'Stormhowl Crown' },
-    216410: { slot: 'Head', name: 'Earthshatter Crown' },
-    23002:  { slot: 'Head', name: 'Crown of Destruction' },
-    22983:  { slot: 'Head', name: 'Eye of Rend' },
-    // Neck
-    216416: { slot: 'Neck', name: 'Choker of the Stormhowl' },
-    19928:  { slot: 'Neck', name: 'Barbed Choker' },
-    19879:  { slot: 'Neck', name: 'Eye of Hakkar' },
-    19382:  { slot: 'Neck', name: "Master Dragonslayer's Medallion" },
-    19381:  { slot: 'Neck', name: 'Onyxia Tooth Pendant' },
-    // Shoulders
-    216417: { slot: 'Shoulders', name: 'Stormhowl Pauldrons' },
-    16841:  { slot: 'Shoulders', name: 'Earthfury Pauldrons' },
-    23072:  { slot: 'Shoulders', name: 'Stormshroud Shoulders' },
-    // Back
-    23206:  { slot: 'Back', name: 'Shroud of Dominion' },
-    19888:  { slot: 'Back', name: 'Cloak of the Fallen God' },
-    // Chest
-    216418: { slot: 'Chest', name: 'Stormhowl Breastplate' },
-    16840:  { slot: 'Chest', name: 'Earthfury Breastplate' },
-    // Hands
-    216421: { slot: 'Hands', name: 'Handwraps of Dead Winds' },
-    // Waist
-    216422: { slot: 'Waist', name: 'Earthshatter Girdle' },
-    // Legs
-    216423: { slot: 'Legs', name: 'Stormhowl Leggings' },
-    // Feet
-    216424: { slot: 'Feet', name: 'Stormhowl Sabatons' },
-    // Rings
-    23038:  { slot: 'Ring 1', name: "Master Dragonslayer's Ring" },
-    19397:  { slot: 'Ring 1', name: 'Ring of the Qiraji Fury' },
-    // Trinkets
-    23041:  { slot: 'Trinket 1', name: "Slayer's Crest" },
-    23047:  { slot: 'Trinket 1', name: 'Kiss of the Spider' },
-    // Weapons
-    216340: { slot: 'Main Hand', name: "Shar'tateth, the Shattered Edge" },
-    17182:  { slot: 'Main Hand', name: 'Sulfuras, Hand of Ragnaros' },
-    19364:  { slot: 'Main Hand', name: 'Spinal Reaper' },
-    21581:  { slot: 'Main Hand', name: 'The Unstoppable Force' },
-    13262:  { slot: 'Main Hand', name: 'Arcanite Reaper' },
-    12783:  { slot: 'Main Hand', name: 'Nightfall' },
-  };
-  Object.entries(knownIds).forEach(([id, data]) => {
-    ARMORY_ITEM_ID_MAP[parseInt(id)] = data;
-  });
-}
+// Complete Enhancement Shaman item ID map — 162 items covering all phases
+// Maps Turtle WoW armory item ID -> [gear planner slot, item name]
+// Custom IDs (216xxx) assigned for P4 Turtle items not yet in public DBs
+var ARMORY_ITEM_ID_MAP = {
+  216100:["Head","Stormhowl Crown"],216101:["Head","Earthshatter Crown"],
+  23002:["Head","Crown of Ten Storms"],23004:["Head","Crown of Destruction"],
+  16840:["Head","Earthfury Crown"],216102:["Head","Blackstone Crown"],
+  216103:["Head","Skyfury Helm"],61060:["Head","Thornweave Mask"],
+  12587:["Head","Eye of Rend"],
+  216110:["Neck","Choker of the Stormhowl"],55507:["Neck","Choker of Terminal Arcanum"],
+  23053:["Neck","Stormrage's Talisman of Seething"],21664:["Neck","Barbed Choker"],
+  19856:["Neck","Eye of Hakkar"],19383:["Neck","Master Dragonslayer's Medallion"],
+  18404:["Neck","Onyxia Tooth Pendant"],17065:["Neck","Medallion of Steadfast Migth"],
+  15411:["Neck","Mark of Fordring"],61029:["Neck","Crocolisk Tooth Necklace"],
+  22340:["Neck","Pendant of Celerity"],
+  216120:["Shoulders","Stormhowl Pauldrons"],216121:["Shoulders","Earthshatter Pauldrons"],
+  23071:["Shoulders","Pauldrons of Ten Storms"],216122:["Shoulders","Runic Stone Shoulders"],
+  16839:["Shoulders","Earthfury Pauldrons"],216123:["Shoulders","Shoulderpads of True Flight"],
+  216124:["Shoulders","Shoulderguards of the Defiler"],15058:["Shoulders","Stormshroud Shoulders"],
+  216125:["Shoulders","Pauldrons of Elusiveness"],216126:["Shoulders","Black Dragonscale Shoulders"],
+  21665:["Shoulders","Mantle of Wicked Revenge"],
+  55515:["Back","Felforged Nathrezan Veil"],55095:["Back","Cloak of the Bloody Ravager"],
+  23045:["Back","Shroud of Dominion"],51734:["Back","Shawl of Haunted Memories"],
+  21710:["Back","Cloak of the Fallen God"],19436:["Back","Cloak of Draconic Might"],
+  17102:["Back","Cloak of the Shrouded Mists"],61010:["Back","Wing of the Time-Lord"],
+  58258:["Back","Royal Guard Chain Cloak"],13340:["Back","Cape of the Black Baron"],
+  216130:["Chest","Stormhowl Breastplate"],216131:["Chest","Earthshatter Breastplate"],
+  216135:["Chest","Breastplate of Ten Storms"],216132:["Chest","Breastplate of Earthen Might"],
+  16838:["Chest","Earthfury Breastplate"],22684:["Chest","Savage Gladiator Chain"],
+  50427:["Chest","Time-blackened Chestpiece"],216133:["Chest","Black Dragonscale Breastplate"],
+  216134:["Chest","Hateforge Cuirass"],
+  216140:["Wrist","Earthshatter Bracelets"],21602:["Wrist","Qiraji Execution Bracers"],
+  61212:["Wrist","Sanctum Bark Wraps"],216141:["Wrist","Bracelets of Ten Storms"],
+  216142:["Wrist","Wristguards of True Flight"],16837:["Wrist","Earthfury Bracelets"],
+  19146:["Wrist","Wristguards of Stability"],12966:["Wrist","Blackmist Armguards"],
+  61647:["Wrist","Cuffs of Nordanaar"],216143:["Wrist","Bracers of the Stone Princess"],
+  56061:["Wrist","Embergem Cuffs"],
+  55125:["Hands","Handwraps of Dead Winds"],216150:["Hands","Earthshatter Fists"],
+  216151:["Hands","Carapace Handguards"],216152:["Hands","Fists of Ten Storms"],
+  216153:["Hands","Flameguard Gauntlets"],16836:["Hands","Earthfury Fists"],
+  21278:["Hands","Stormshroud Gloves"],13957:["Hands","Gargoyle Slashers"],
+  216154:["Hands","Voone's Vice Grips"],15063:["Hands","Devilsaur Gauntlets"],
+  216155:["Hands","Gauntlets of Kalimdor"],
+  55357:["Waist","Sash of the Grand Betrayal"],216160:["Waist","Earthshatter Girdle"],
+  216161:["Waist","Primalist's Linked Waistguard"],216162:["Waist","Cloverlink Belt"],
+  216163:["Waist","Therazane's Link"],216164:["Waist","Girdle of Ten Storms"],
+  16835:["Waist","Earthfury Girdle"],216165:["Waist","Marksman's Girdle"],
+  216170:["Legs","Stormhowl Leggings"],216171:["Legs","Earthquake Leggings"],
+  216172:["Legs","Earthshatter Leggings"],216173:["Legs","Scaled Sand Reaver Leggings"],
+  216174:["Legs","Ancient Jade Leggings"],23076:["Legs","Leggings of Ten Storms"],
+  16834:["Legs","Earthfury Leggings"],216175:["Legs","Legguards of the Chromatic Defier"],
+  216176:["Legs","Leggings of Alacrity"],216177:["Legs","Legplates of the Raider"],
+  216178:["Legs","Deathrune Leggings"],216179:["Legs","Black Dragonscale Leggings"],
+  15062:["Legs","Devilsaur Leggings"],216180:["Legs","Hateforge Leggings"],
+  216190:["Feet","Stormhowl Sabatons"],216191:["Feet","Earthshatter Sabatons"],
+  23073:["Feet","Boots of Displacement"],21613:["Feet","Wormhide Boots"],
+  216192:["Feet","Sabatons of Ten Storms"],16833:["Feet","Earthfury Sabatons"],
+  216193:["Feet","Greaves of the Elusive"],83442:["Feet","Miasma Walkers"],
+  61005:["Feet","Boots of Flowing Sands"],216194:["Feet","Black Dragonscale Boots"],
+  216195:["Feet","Hateforge Boots"],
+  55353:["Ring 1","Mephistroth's Cunning"],55508:["Ring 1","Brand of Karazhan"],
+  216200:["Ring 1","Signet of the Earthshatterer"],23038:["Ring 1","Band of Unnatural Forces"],
+  21677:["Ring 1","Ring of the Qiraji Fury"],
+  21196:["Ring 1","Signet Ring of the Bronze Dragonflight (Tank)"],
+  21197:["Ring 1","Signet Ring of the Bronze Dragonflight (DPS)"],
+  216201:["Ring 1","Ring of Emperor Vek'lor"],216202:["Ring 1","Angelista's Touch"],
+  216203:["Ring 1","Master Dragonslayer's Ring"],216204:["Ring 1","Archimtiros's Ring of Reckoning"],
+  19432:["Ring 1","Circle of Applied Force"],22722:["Ring 1","Seal of the Gurubashi Berserker"],
+  18821:["Ring 1","Quick Strike Ring"],55479:["Ring 1","Nethershard Band"],
+  13098:["Ring 1","Painweaver Band"],80760:["Ring 1","Spireblade Band"],
+  18500:["Ring 1","Tarnished Elven Ring"],17713:["Ring 1","Blackstone Ring"],
+  216210:["Trinket 1","Shieldrender Talisman"],23206:["Trinket 1","Mark of the Champion (ap)"],
+  23041:["Trinket 1","Slayer's Crest"],22954:["Trinket 1","Kiss of the Spider"],
+  61194:["Trinket 1","Heart of Dreams"],13965:["Trinket 1","Blackhand's Breadth"],
+  11815:["Trinket 1","Hand of Justice"],
+  216220:["Main Hand","Shar'tateth, the Shattered Edge"],55100:["Main Hand","Checkmate"],
+  22798:["Main Hand","Might of Menethil"],17182:["Main Hand","Sulfuras, Hand of Ragnaros"],
+  216221:["Main Hand","Severance"],216222:["Main Hand","Dark Edge of Insanity"],
+  216223:["Main Hand","Neretzek"],41076:["Main Hand","Aspect of Seradane"],
+  216224:["Main Hand","Drake Talon Cleaver"],61277:["Main Hand","Fist of the Forgotten Order"],
+  216225:["Main Hand","Spinal Reaper"],21581:["Main Hand","The Unstoppable Force"],
+  83440:["Main Hand","Boneshatter Maul"],13262:["Main Hand","Arcanite Reaper"],
+  216226:["Main Hand","Dreadforge Retaliator"],
+  55347:["Main Hand","Thunderfall, Stormhammer of the Chief Thane"],
+  55276:["Main Hand","Forgotten Raven's Mallet"],22808:["Main Hand","The Castigator"],
+  216227:["Main Hand","Hatchet of Sundered Bone"],60003:["Main Hand","Remnants of an Old God"],
+  21268:["Main Hand","Blessed Qiraji War Hammer"],216228:["Main Hand","Blessed Qiraji War Axe"],
+  61237:["Main Hand","Mallet of the Awakening"],216229:["Main Hand","Crul'shorukh, Edge of Chaos"],
+  19335:["Main Hand","Spineshatter"],19365:["Main Hand","Claw of the Black Drake"],
+  216230:["Main Hand","Doom's Edge"],216231:["Main Hand","Deathbringer"],
+  18805:["Main Hand","Core Hound Tooth"],216232:["Main Hand","Elementium Reaper"],
+  216233:["Main Hand","Nightfall"],
+  216136:["Chest","Stormcaller's Breastplate"],
+  216104:["Head","Stormhowl Helmet (Ele)"],
+  216111:["Neck","Pendant of the Stormhowl (Ele)"]
+};
 
 function applyImportData(importedItems, race, charName) {
   var matched = 0;
 
-  // Set race in simulator
+  // Set race
   var raceSel = document.getElementById('race');
   if (raceSel && race) raceSel.value = race;
 
-  // Try to match each item ID to our gear planner
+  // Clear current gear selections in dropdowns
+  GEAR_SLOTS_ORDER.forEach(function(slot) {
+    var sel = document.getElementById('slot_' + slot.replace(/ /g,'_'));
+    if (sel) sel.value = '';
+  });
+
+  // Track which dual-slots are already filled
+  var ring1Used = false, ring2Used = false;
+  var t1Used = false, t2Used = false;
+
   importedItems.forEach(function(entry) {
     var known = ARMORY_ITEM_ID_MAP[entry.itemId];
     if (!known) return;
 
-    var slot = known.slot;
-    var itemName = known.name;
-    var selId = 'slot_' + slot.replace(/ /g, '_');
+    var baseSlot = known[0];
+    var itemName = known[1];
+    var slotToAssign = baseSlot;
+
+    // Handle dual-slot items exactly like the feral sim
+    if (baseSlot === 'Ring 1') {
+      if (!ring1Used) { slotToAssign = 'Ring 1'; ring1Used = true; }
+      else if (!ring2Used) { slotToAssign = 'Ring 2'; ring2Used = true; }
+      else return; // both filled
+    } else if (baseSlot === 'Trinket 1') {
+      if (!t1Used) { slotToAssign = 'Trinket 1'; t1Used = true; }
+      else if (!t2Used) { slotToAssign = 'Trinket 2'; t2Used = true; }
+      else return;
+    }
+
+    var selId = 'slot_' + slotToAssign.replace(/ /g,'_');
     var sel = document.getElementById(selId);
     if (!sel) return;
 
-    // Check if the item name exists in the dropdown
+    // Find matching option in dropdown
     for (var i = 0; i < sel.options.length; i++) {
       if (sel.options[i].value === itemName) {
         sel.value = itemName;
@@ -2284,8 +2346,7 @@ function switchTabDirect(t) {
   });
 }
 
-// Build the ID map on load
-buildArmoryIdMap();
+// (item ID map is defined inline above)
 
 function applyManualImport() {
   var fields = [
