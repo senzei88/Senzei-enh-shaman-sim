@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Enh Shaman Sim — Turtle WoW 1.18</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #0a0c0f;
+  --bg2: #0f1217;
+  --bg3: #151a22;
+  --bg4: #1c2430;
+  --border: #2a3a50;
+  --border2: #1e2d40;
+  --text: #c8d8e8;
+  --text2: #7a9ab8;
+  --text3: #4a6a88;
+  --gold: #d4a017;
+  --gold2: #f0c840;
+  --blue: #4fa3e8;
+  --blue2: #2a72b8;
+  --lightning: #b8e0ff;
+  --green: #4caf50;
+  --red: #e53935;
+  --orange: #f57c00;
+  --purple: #9c27b0;
+  --accent: #00bcd4;
+  --shaman-blue: #0070de;
+  --shaman-light: #40a4ff;
+  --windfury: #80d4ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Lightning background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,112,222,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 10%, rgba(128,212,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 0 12px; }
+
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(135deg, #070c14 0%, #0a1520 50%, #060f1a 100%);
+  border-bottom: 2px solid var(--shaman-blue);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,112,222,0.3);
+}
+
+.header-icon {
+  font-size: 32px;
+  animation: pulse-lightning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-lightning {
+  0%,100% { text-shadow: 0 0 10px rgba(128,212,255,0.5); }
+  50% { text-shadow: 0 0 25px rgba(128,212,255,1), 0 0 50px rgba(0,112,222,0.8); }
+}
+
+.header-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--gold2); letter-spacing: 2px; }
+.header-sub { font-size: 12px; color: var(--text2); letter-spacing: 1px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 12px;
+  gap: 2px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.tab-btn:hover { color: var(--text); border-bottom-color: var(--border); }
+.tab-btn.active { color: var(--shaman-light); border-bottom-color: var(--shaman-blue); background: rgba(0,112,222,0.08); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== LAYOUT ===== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+  padding: 12px;
+  min-height: calc(100vh - 100px);
+}
+
+.sidebar { display: flex; flex-direction: column; gap: 10px; }
+.main-panel { display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(90deg, var(--bg3), var(--bg4));
+  border-bottom: 1px solid var(--border2);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.card-body { padding: 10px; }
+
+/* ===== FORM ELEMENTS ===== */
+input[type="number"], input[type="text"], select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  padding: 4px 8px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+input[type="number"]:focus, select:focus { outline: none; border-color: var(--shaman-blue); box-shadow: 0 0 0 2px rgba(0,112,222,0.2); }
+select option { background: var(--bg3); }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.form-row label { color: var(--text2); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+.form-row-3 { grid-template-columns: 120px 1fr 80px; }
+
+.form-section { margin-bottom: 10px; }
+.form-section-title { color: var(--text3); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border2); padding-bottom: 4px; margin-bottom: 6px; }
+
+/* Checkboxes */
+.check-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; cursor: pointer; }
+.check-row input[type="checkbox"] { accent-color: var(--shaman-blue); width: 14px; height: 14px; cursor: pointer; }
+.check-row span { font-size: 12px; color: var(--text2); }
+
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+/* Talent inputs */
+.tal-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px; margin-bottom: 3px; }
+.tal-row label { font-size: 12px; color: var(--text2); }
+.tal-row input { width: 50px; text-align: center; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--shaman-blue), #0050aa);
+  color: #fff;
+  border: 1px solid var(--shaman-light);
+  box-shadow: 0 2px 8px rgba(0,112,222,0.4);
+}
+.btn-primary:hover { background: linear-gradient(135deg, var(--shaman-light), var(--shaman-blue)); box-shadow: 0 4px 16px rgba(0,112,222,0.6); }
+
+.btn-secondary { background: var(--bg4); color: var(--text2); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--text2); color: var(--text); }
+
+.btn-gold { background: linear-gradient(135deg, #a07010, #d4a017); color: #fff; border: 1px solid var(--gold2); }
+.btn-gold:hover { background: linear-gradient(135deg, var(--gold), var(--gold2)); }
+
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-lg { padding: 12px 24px; font-size: 16px; width: 100%; }
+
+/* ===== PROGRESS BAR ===== */
+#progressBar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--bg);
+  z-index: 9999;
+}
+#progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--shaman-blue), var(--windfury));
+  transition: width 0.1s;
+  box-shadow: 0 0 8px var(--shaman-blue);
+}
+
+/* ===== RESULTS ===== */
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.result-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+.result-card .label { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.result-card .value { font-family: 'Share Tech Mono', monospace; font-size: 28px; color: var(--shaman-light); font-weight: bold; }
+.result-card .sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.result-card.tps .value { color: var(--gold); }
+.result-card.dps .value { color: var(--green); }
+
+/* Breakdown table */
+.breakdown-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.breakdown-table th { padding: 5px 8px; text-align: left; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+.breakdown-table td { padding: 4px 8px; border-bottom: 1px solid var(--border2); }
+.breakdown-table tr:last-child td { border-bottom: none; }
+.breakdown-table .bar-cell { width: 120px; }
+.bar-bg { background: var(--bg3); border-radius: 2px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--shaman-blue), var(--windfury)); transition: width 0.5s; }
+.bar-fill.phys { background: linear-gradient(90deg, #c8a040, #f0c840); }
+.bar-fill.magic { background: linear-gradient(90deg, #4060d0, #80a8ff); }
+.bar-fill.ss { background: linear-gradient(90deg, #c030a0, #e060d0); }
+.val-right { text-align: right; font-family: 'Share Tech Mono', monospace; color: var(--text); }
+.pct-right { text-align: right; color: var(--text3); }
+
+/* Stat weights display */
+.sw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sw-table th { padding: 5px 8px; color: var(--text3); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 1px; }
+.sw-table td { padding: 5px 8px; border-bottom: 1px solid var(--border2); }
+.sw-table .stat-name { color: var(--text2); }
+.sw-table .sw-val { font-family: 'Share Tech Mono', monospace; color: var(--shaman-light); text-align: right; }
+.sw-table .sw-ap { font-family: 'Share Tech Mono', monospace; color: var(--gold); text-align: right; }
+
+/* ===== GEAR PLANNER ===== */
+.gear-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  gap: 12px;
+  padding: 12px;
+}
+
+.gear-col { display: flex; flex-direction: column; gap: 8px; }
+
+.gear-slot {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.gear-slot:hover { border-color: var(--shaman-blue); }
+
+.gear-slot-name {
+  background: var(--bg4);
+  border-bottom: 1px solid var(--border2);
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gear-slot-body { padding: 6px 8px; }
+.gear-slot-body select { font-size: 12px; background: var(--bg2); }
+.gear-slot-ench { margin-top: 4px; }
+.gear-slot-ench select { font-size: 11px; color: var(--text3); }
+
+.gear-ep { text-align: right; font-size: 10px; color: var(--gold); font-family: 'Share Tech Mono', monospace; margin-top: 3px; }
+
+.gear-score-bar {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gear-score-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.gear-score-value { font-family: 'Share Tech Mono', monospace; font-size: 22px; color: var(--gold2); }
+
+/* ===== ARMORY ===== */
+.armory-panel {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 10px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border2);
+}
+
+.armory-panel label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+.armory-panel input { width: 240px; }
+.armory-status { font-size: 12px; color: var(--text3); padding: 6px 10px; }
+
+/* ===== TOASTS ===== */
+#toast {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  background: var(--bg4);
+  border: 1px solid var(--shaman-blue);
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--shaman-light);
+  box-shadow: 0 4px 20px rgba(0,112,222,0.4);
+  z-index: 9999;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Wf animation */
+.wf-tag { display: inline-block; background: linear-gradient(90deg, var(--shaman-blue), var(--windfury)); padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; margin-left: 4px; }
+
+/* Config input row helpers */
+.input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.input-group { display: flex; flex-direction: column; gap: 3px; }
+.input-group label { font-size: 11px; color: var(--text3); }
+.input-group input, .input-group select { width: 90px; }
+
+.separator { border: none; border-top: 1px solid var(--border2); margin: 8px 0; }
+
+/* Pct badge */
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 700; }
+.badge-blue { background: rgba(0,112,222,0.2); color: var(--shaman-light); border: 1px solid rgba(0,112,222,0.3); }
+.badge-gold { background: rgba(212,160,23,0.2); color: var(--gold2); border: 1px solid rgba(212,160,23,0.3); }
+.badge-green { background: rgba(76,175,80,0.2); color: var(--green); border: 1px solid rgba(76,175,80,0.3); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--shaman-blue); }
+
+/* Chart placeholder */
+.chart-area { background: var(--bg3); border-radius: 6px; padding: 12px; min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 13px; }
+
+.no-results { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
+.no-results .icon { font-size: 40px; margin-bottom: 8px; }
+
+.sim-btn-row { display: flex; gap: 8px; }
+
+/* Talent grid */
+.tal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+/* Spell icon placeholder */
+.slot-icon { font-size: 18px; }
+
+/* Stat weight ranking bars */
+.sw-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.sw-bar-label { width: 110px; font-size: 12px; color: var(--text2); text-align: right; }
+.sw-bar-track { flex: 1; height: 16px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.sw-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--shaman-blue), var(--windfury)); transition: width 0.6s ease; }
+.sw-bar-val { width: 60px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--shaman-light); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main-layout { grid-template-columns: 1fr; }
+  .gear-layout { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="progressBar"><div id="progressBarFill" style="width:0%"></div></div>
+<div id="toast"></div>
+
+<header>
+  <div class="header-icon">⚡</div>
+  <div>
+    <div class="header-title">Enhancement Shaman Simulator</div>
+    <div class="header-sub">Turtle WoW · Patch 1.18 · DPS / TPS / Mana</div>
+  </div>
+  <div class="header-right">
+    <span id="dbStatus" style="font-size:11px;color:var(--text3);">Ready</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('sim')">⚡ Simulator</button>
+  <button class="tab-btn" onclick="switchTab('gear')">🛡️ Gear Planner</button>
+  <button class="tab-btn" onclick="switchTab('weights')">📊 Stat Weights</button>
+  <button class="tab-btn" onclick="switchTab('armory')">🔍 Armory Import</button>
+</div>
+
+<!-- ===================== TAB: SIM ===================== -->
+<div id="tab-sim" class="tab-content active">
+<div class="main-layout">
+
+  <!-- SIDEBAR: CONFIG -->
+  <div class="sidebar">
+
+    <!-- Character Stats -->
+    <div class="card">
+      <div class="card-header">⚡ Character Stats</div>
+      <div class="card-body">
+        <div class="form-section-title">Race</div>
+        <div class="form-row">
+          <label>Race</label>
+          <select id="race">
+            <option value="Orc">Orc</option>
+            <option value="Troll">Troll</option>
+            <option value="Tauren">Tauren</option>
+          </select>
+        </div>
+        <div class="form-section-title" style="margin-top:8px;">Melee Stats</div>
+        <div class="form-row"><label>Bonus Strength</label><input type="number" id="stat_str" value="300" min="0"></div>
+        <div class="form-row"><label>Melee AP</label><input type="number" id="stat_ap" value="178" min="0"></div>
+        <div class="form-row"><label>Bonus Agility</label><input type="number" id="stat_agi" value="207" min="0"></div>
+        <div class="form-row"><label>Phys Crit %</label><input type="number" id="stat_crit" value="15" min="0" step="0.1"></div>
+        <div class="form-row"><label>Phys Hit %</label><input type="number" id="stat_hit" value="4" min="0" step="0.1"></div>
+        <div class="form-row"><label>Haste %</label><input type="number" id="stat_haste" value="12.63" min="0" step="0.1"></div>
+        <div class="form-row"><label>Weapon Skill</label><input type="number" id="stat_wep_skill" value="315" min="300"></div>
+        <div class="form-row"><label>Armor Pen</label><input type="number" id="stat_arp" value="250" min="0"></div>
+        <div class="form-section-title" style="margin-top:8px;">Spell Stats</div>
+        <div class="form-row"><label>Intellect</label><input type="number" id="stat_int" value="94" min="0"></div>
+        <div class="form-row"><label>MP5</label><input type="number" id="stat_mp5" value="0" min="0"></div>
+        <div class="form-row"><label>Spellpower</label><input type="number" id="stat_sp" value="0" min="0"></div>
+        <div class="form-row"><label>Nature SP</label><input type="number" id="stat_nature_sp" value="0" min="0"></div>
+        <div class="form-row"><label>Fire SP</label><input type="number" id="stat_fire_sp" value="0" min="0"></div>
+        <div class="form-row"><label>Spell Crit %</label><input type="number" id="stat_spell_crit" value="0" min="0" step="0.1"></div>
+        <div class="form-row"><label>Spell Hit %</label><input type="number" id="stat_spell_hit" value="0" min="0" step="0.1"></div>
+        <div class="form-section-title" style="margin-top:8px;">Weapon</div>
+        <div class="form-row"><label>Weapon</label>
+          <select id="weapon_select" onchange="onWeaponChange()"><option value="custom">Custom</option></select>
+        </div>
+        <div class="form-row"><label>Min Damage</label><input type="number" id="stat_wep_min" value="307" min="0"></div>
+        <div class="form-row"><label>Max Damage</label><input type="number" id="stat_wep_max" value="453" min="0"></div>
+        <div class="form-row"><label>Weapon Speed</label><input type="number" id="stat_wep_speed" value="3.8" min="0.5" step="0.1"></div>
+      </div>
+    </div>
+
+    <!-- Sim Settings -->
+    <div class="card">
+      <div class="card-header">⚙️ Simulation Settings</div>
+      <div class="card-body">
+        <div class="form-row"><label>Fight Duration (s)</label><input type="number" id="sim_time" value="90" min="10"></div>
+        <div class="form-row"><label>Iterations</label><input type="number" id="sim_count" value="5000" min="100"></div>
+        <div class="form-row"><label>Vary Duration</label>
+          <label class="check-row"><input type="checkbox" id="sim_vary" checked><span>±2s smear</span></label>
+        </div>
+        <div class="form-row"><label>No. Targets</label><input type="number" id="num_targets" value="1" min="1" max="10"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAIN: Right config + results -->
+  <div class="main-panel">
+
+    <!-- Config panels row -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+
+      <!-- Talents -->
+      <div class="card">
+        <div class="card-header">🎯 Talents</div>
+        <div class="card-body">
+          <div class="form-section-title">Enhancement</div>
+          <div class="tal-row"><label>Ancestral Knowledge</label><input type="number" id="tal_ancestral" value="5" min="0" max="5"></div>
+          <div class="tal-row"><label>Thundering Strikes</label><input type="number" id="tal_ts" value="5" min="0" max="5"></div>
+          <div class="tal-row"><label>Improved Stormstrike</label><input type="number" id="tal_iss" value="2" min="0" max="2"></div>
+          <div class="tal-row"><label>Flurry</label><input type="number" id="tal_flurry" value="5" min="0" max="5"></div>
+          <div class="tal-row"><label>Enhancing Totems</label><input type="number" id="tal_enh_tot" value="2" min="0" max="2"></div>
+          <div class="tal-row"><label>Concussion</label><input type="number" id="tal_conc" value="5" min="0" max="5"></div>
+          <div class="tal-row"><label>Elemental Devastation</label><input type="number" id="tal_ele_dev" value="3" min="0" max="3"></div>
+          <div class="tal-row"><label>Elemental Weapons</label><input type="number" id="tal_ele_wep" value="3" min="0" max="3"></div>
+          <div class="tal-row"><label>Reverberation</label><input type="number" id="tal_reverb" value="3" min="0" max="3"></div>
+          <div class="tal-row"><label>Totemic Alignment</label><input type="number" id="tal_tot_align" value="0" min="0" max="1"></div>
+          <div class="tal-row"><label>Calming Winds</label><input type="number" id="tal_calm" value="3" min="0" max="3"></div>
+          <div class="tal-row"><label>Element's Grace</label><input type="number" id="tal_grace" value="5" min="0" max="5"></div>
+          <div class="form-section-title" style="margin-top:8px;">Elemental</div>
+          <div class="tal-row"><label>Call of Flame</label><input type="number" id="tal_cof" value="2" min="0" max="3"></div>
+          <div class="tal-row"><label>Convection</label><input type="number" id="tal_conv" value="2" min="0" max="5"></div>
+          <div class="tal-row"><label>Elemental Focus</label><input type="number" id="tal_ele_foc" value="1" min="0" max="1"></div>
+          <div class="tal-row"><label>Elemental Fury</label><input type="number" id="tal_ele_fury" value="0" min="0" max="5"></div>
+          <div class="tal-row"><label>Improved Fire Totems</label><input type="number" id="tal_imp_fire_tot" value="0" min="0" max="2"></div>
+          <div class="form-section-title" style="margin-top:8px;">Restoration</div>
+          <div class="tal-row"><label>Meditation</label><input type="number" id="tal_med" value="0" min="0" max="3"></div>
+          <div class="tal-row"><label>Spirit Armor</label><input type="number" id="tal_spirit_armor" value="0" min="0" max="5"></div>
+          <div class="tal-row"><label>Imp Molten Blast</label><input type="number" id="tal_imp_mb" value="1" min="0" max="1"></div>
+        </div>
+      </div>
+
+      <!-- Encounter & Debuffs -->
+      <div class="card">
+        <div class="card-header">⚔️ Encounter</div>
+        <div class="card-body">
+          <div class="form-section-title">Target</div>
+          <div class="form-row"><label>Enemy Level</label><input type="number" id="enemy_level" value="63" min="60" max="63"></div>
+          <div class="form-row"><label>Enemy Armor</label><input type="number" id="enemy_armor" value="4611" min="0"></div>
+          <div class="form-row"><label>Boss Preset</label>
+            <select id="boss_preset" onchange="applyBossPreset()">
+              <option value="">-- Select --</option>
+              <option value="63:4211">Most Bosses (4211)</option>
+              <option value="63:4611">Naxx Loatheb/Patch (4611)</option>
+              <option value="63:3850">Naxx Faerlina (3850)</option>
+              <option value="63:3402">Naxx Gothik/KT (3402)</option>
+              <option value="63:4311">AQ40 Most (4311)</option>
+              <option value="63:4786">MC Sulfuron (4786)</option>
+              <option value="63:4112">ZG Most (3402)</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Num. Targets</label><input type="number" id="num_targets2" value="1" min="1" max="10"></div>
+          <div class="form-row"><label>Attacking Behind</label><label class="check-row"><input type="checkbox" id="attacking_behind" checked><span>Yes (+dodge eliminated)</span></label></div>
+          <div class="form-row"><label>Being Attacked</label><label class="check-row"><input type="checkbox" id="being_attacked"><span>Yes (block/parry)</span></label></div>
+          <div class="form-section-title" style="margin-top:8px;">Debuffs on Target</div>
+          <div class="form-row"><label>Sunder Armor</label><input type="number" id="debuff_sunder" value="1" min="0" max="5"></div>
+          <div class="form-row"><label>Faerie Fire</label><label class="check-row"><input type="checkbox" id="debuff_ff" checked><span>-175 armor</span></label></div>
+          <div class="form-row"><label>Curse of Recklessness</label><label class="check-row"><input type="checkbox" id="debuff_cor" checked><span>-640 armor</span></label></div>
+          <div class="form-row"><label>Hemorrhage</label><label class="check-row"><input type="checkbox" id="debuff_hem"><span>x1.25 bleeds</span></label></div>
+          <div class="form-row"><label>Improved EA</label><label class="check-row"><input type="checkbox" id="debuff_imp_ea" checked><span>-975 armor</span></label></div>
+          <div class="form-row"><label>Thunderfury</label><input type="number" id="debuff_tf_stacks" value="1" min="0" max="5"></div>
+          <div class="form-row"><label>Gift of Arthas</label><label class="check-row"><input type="checkbox" id="debuff_goa"><span>+8 spell damage taken</span></label></div>
+          <div class="form-row"><label>Curse of Elements</label><label class="check-row"><input type="checkbox" id="debuff_coe" checked><span>+10% magic dmg</span></label></div>
+          <div class="form-row"><label>Improved Scorch</label><label class="check-row"><input type="checkbox" id="debuff_imp_scorch" checked><span>+15% fire crit</span></label></div>
+          <div class="form-row"><label>Nightfall</label><input type="number" id="debuff_nightfall" value="1" min="0" max="5"></div>
+          <div class="form-row"><label>Judgement of Wisdom</label><label class="check-row"><input type="checkbox" id="debuff_jow" checked><span>JoW</span></label></div>
+        </div>
+      </div>
+
+      <!-- Buffs & Totems -->
+      <div class="card">
+        <div class="card-header">🌿 Buffs & Totems</div>
+        <div class="card-body">
+          <div class="form-section-title">Raid Buffs</div>
+          <div class="check-grid">
+            <label class="check-row"><input type="checkbox" id="buff_motw" checked><span>Mark of the Wild</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_kings" checked><span>Blessing of Kings</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_might" checked><span>Blessing of Might</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_bs" checked><span>Battle Shout</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_lotp"><span>Leader of the Pack</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_trueshot"><span>Trueshot Aura</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_ai" checked><span>Arcane Intellect</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_divine_spirit" checked><span>Divine Spirit</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_bloodlust"><span>Bloodlust</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_boomy"><span>Boomy Aura (+3% crit)</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_salvation" checked><span>Salvation (-30% threat)</span></label>
+            <label class="check-row"><input type="checkbox" id="buff_wisdom" checked><span>Blessing of Wisdom</span></label>
+          </div>
+          <div class="form-section-title" style="margin-top:8px;">Self Totems</div>
+          <div class="form-row"><label>Weapon Imbue</label>
+            <select id="self_imbue">
+              <option value="flametongue">Flametongue</option>
+              <option value="windfury">Windfury</option>
+              <option value="rockbiter">Rockbiter</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Fire Totem</label>
+            <select id="self_fire_totem">
+              <option value="nova_searing">Nova+Searing</option>
+              <option value="magma">Magma Totem</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Windfury Totem</label><label class="check-row"><input type="checkbox" id="buff_wf_totem"><span>Active</span></label></div>
+          <div class="form-row"><label>Strength of Earth</label><label class="check-row"><input type="checkbox" id="buff_soe" checked><span>+77 STR</span></label></div>
+          <div class="form-row"><label>Grace of Air</label><label class="check-row"><input type="checkbox" id="buff_goa" checked><span>+77 AGI</span></label></div>
+          <div class="form-row"><label>Stonebreaker Totem</label><label class="check-row"><input type="checkbox" id="buff_stonebreaker"><span>-450 armor</span></label></div>
+          <div class="form-row"><label>Totem of Rage</label><label class="check-row"><input type="checkbox" id="buff_totem_rage"><span>+50 AP (self)</span></label></div>
+          <div class="form-section-title" style="margin-top:8px;">Consumables</div>
+          <div class="check-grid">
+            <label class="check-row"><input type="checkbox" id="consum_mongoose" checked><span>Mongoose</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_firewater" checked><span>Firewater</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_giants" checked><span>Elixir of Giants</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_roids"><span>R.O.I.D.S</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_scorpok"><span>Scorpok Assay</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_juju_might"><span>Juju Might</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_juju_power"><span>Juju Power</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_zanza" checked><span>Zanza</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_arcane_elixir" checked><span>Arcane Elixir</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_nature_power" checked><span>Nature Power</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_fire_power" checked><span>Fire Power</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_dreamtonic" checked><span>Dreamtonic</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_sup_power" checked><span>Supreme Power</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_mageblood" checked><span>Mageblood</span></label>
+            <label class="check-row"><input type="checkbox" id="consum_dreamshard" checked><span>Dreamshard</span></label>
+          </div>
+          <div class="form-section-title" style="margin-top:8px;">Mana</div>
+          <div class="form-row"><label>Major Mana Pots</label><input type="number" id="num_mana_pots" value="2" min="0" max="5"></div>
+          <div class="form-row"><label>Rune of Power</label><input type="number" id="num_rune" value="0" min="0" max="3"></div>
+          <div class="form-row"><label>Night Dragon Tea</label><input type="number" id="num_tea" value="2" min="0" max="5"></div>
+          <div class="form-section-title" style="margin-top:8px;">Set Bonuses & Items</div>
+          <div class="check-grid">
+            <label class="check-row"><input type="checkbox" id="set_t3_2pc" checked><span>T3 2pc (+5% WF)</span></label>
+            <label class="check-row"><input type="checkbox" id="set_t3_4pc"><span>T3 4pc (+30AP after SS)</span></label>
+            <label class="check-row"><input type="checkbox" id="set_t35_3pc" checked><span>T3.5 3pc (Forgotten Order)</span></label>
+            <label class="check-row"><input type="checkbox" id="set_t35_5pc" checked><span>T3.5 5pc (+5% SS)</span></label>
+            <label class="check-row"><input type="checkbox" id="set_t25_5pc"><span>T2.5 5pc (+25% Rockbiter)</span></label>
+            <label class="check-row"><input type="checkbox" id="item_subtlety" checked><span>Subtlety Cloak</span></label>
+            <label class="check-row"><input type="checkbox" id="item_threat_gloves"><span>Threat Gloves</span></label>
+            <label class="check-row"><input type="checkbox" id="item_woc"><span>Wrath of Cenarius</span></label>
+            <label class="check-row"><input type="checkbox" id="item_nobility_drape"><span>Nobility Drape</span></label>
+          </div>
+          <div class="form-section-title" style="margin-top:8px;">Trinket Proc/Use</div>
+          <div class="check-grid">
+            <label class="check-row"><input type="checkbox" id="trinket_slayer"><span>Slayer's Crest</span></label>
+            <label class="check-row"><input type="checkbox" id="trinket_spider"><span>Kiss of the Spider</span></label>
+            <label class="check-row"><input type="checkbox" id="trinket_earthstrike"><span>Earthstrike</span></label>
+            <label class="check-row"><input type="checkbox" id="trinket_shieldrender"><span>Shieldrender</span></label>
+            <label class="check-row"><input type="checkbox" id="trinket_jomgabbar"><span>Jom Gabbar</span></label>
+            <label class="check-row"><input type="checkbox" id="trinket_hoj"><span>Hand of Justice (proc)</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotation Config -->
+    <div class="card">
+      <div class="card-header">🔄 Rotation Settings</div>
+      <div class="card-body" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+        <div>
+          <div class="form-section-title">Shocks</div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Shock Priority</label>
+            <select id="shock_priority">
+              <option value="earth">Earth Shock</option>
+              <option value="flame">Flame Shock</option>
+              <option value="none">No Shocks</option>
+            </select>
+          </div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Use Stormstrike</label><label class="check-row"><input type="checkbox" id="use_ss" checked><span>Yes</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Elemental Mastery</label><label class="check-row"><input type="checkbox" id="use_em"><span>Use</span></label></div>
+        </div>
+        <div>
+          <div class="form-section-title">Totem Drops</div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Magma at start</label><label class="check-row"><input type="checkbox" id="use_magma_opener"><span>Yes</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Re-drop totems</label><label class="check-row"><input type="checkbox" id="redrop_totems" checked><span>Yes</span></label></div>
+        </div>
+        <div>
+          <div class="form-section-title">Special</div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Sulfuras Proc</label><label class="check-row"><input type="checkbox" id="item_sulfuras"><span>Sulfuras</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Neretzek Proc</label><label class="check-row"><input type="checkbox" id="item_neretzek"><span>Neretzek</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>DTC Proc</label><label class="check-row"><input type="checkbox" id="item_dtc"><span>DTC</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Orc Racial</label><label class="check-row"><input type="checkbox" id="orc_racial" checked><span>+5 Axe Skill</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Weapon Skill Book</label><label class="check-row"><input type="checkbox" id="wep_skill_book" checked><span>+5 Skill</span></label></div>
+        </div>
+        <div>
+          <div class="form-section-title">Berserking (Troll)</div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Use Berserking</label><label class="check-row"><input type="checkbox" id="use_berserking"><span>Yes</span></label></div>
+          <div class="form-row" style="grid-template-columns:100px 1fr;"><label>Blood Fury (Orc)</label><label class="check-row"><input type="checkbox" id="use_bloodfury"><span>Yes</span></label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIM BUTTON + RESULTS -->
+    <div class="card">
+      <div class="card-header">🎲 Simulation Controls</div>
+      <div class="card-body">
+        <div class="sim-btn-row" style="margin-bottom:12px;">
+          <button class="btn btn-primary btn-lg" onclick="runSimulation()" id="simBtn" style="flex:2;">⚡ Run Simulation</button>
+          <button class="btn btn-gold" onclick="clearResults()" style="flex:1;">🗑️ Clear</button>
+        </div>
+
+        <div id="resultArea">
+          <div class="no-results">
+            <div class="icon">⚡</div>
+            <div>Configure your character and click <strong>Run Simulation</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ===================== TAB: GEAR ===================== -->
+<div id="tab-gear" class="tab-content">
+  <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--bg2); border-bottom:1px solid var(--border2);">
+    <div style="display:flex; gap:10px; align-items:center;">
+      <select id="gear_weight_mode" onchange="updateGearEP()">
+        <option value="dps">Score by DPS Weight</option>
+        <option value="tps">Score by TPS Weight</option>
+        <option value="ap">Score by AP Equivalency</option>
+      </select>
+      <span style="font-size:12px; color:var(--text3);">Scoring weights from Phase 4 (manual) model</span>
+    </div>
+    <div class="gear-score-bar" style="padding:8px 14px;">
+      <span class="gear-score-label">Total EP</span>
+      <span class="gear-score-value" id="totalEP">0</span>
+    </div>
+  </div>
+
+  <div class="gear-layout">
+    <div class="gear-col" id="gearLeft"></div>
+    <div id="gearMiddle" style="display:flex; flex-direction:column; gap:10px;">
+      <div class="card">
+        <div class="card-header">💎 Best-in-Slot Ranking</div>
+        <div class="card-body">
+          <div id="bisTable" style="font-size:12px; color:var(--text3);">Select items to see rankings appear here.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">🔫 Weapon Selector</div>
+        <div class="card-body">
+          <div id="weaponList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="gear-col" id="gearRight"></div>
+  </div>
+</div>
+
+<!-- ===================== TAB: WEIGHTS ===================== -->
+<div id="tab-weights" class="tab-content">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px;">
+    <div class="card">
+      <div class="card-header">📊 Phase 3 Stat Weights (Manual Model)</div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;">Based on Phase 3 gear profile. Flametongue imbue, lower SP gear.</p>
+        <div id="sw_p3_bars"></div>
+        <hr class="separator">
+        <table class="sw-table">
+          <thead><tr><th>Stat</th><th>DPS Weight</th><th>TPS Weight</th><th>AP Equiv</th><th>SP Equiv</th></tr></thead>
+          <tbody id="sw_p3_table"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">📊 Phase 4 Stat Weights (Automatic Model)</div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;">Based on Phase 4 gear profile. Higher STR/AGI, Windfury imbue enabled.</p>
+        <div id="sw_p4_bars"></div>
+        <hr class="separator">
+        <table class="sw-table">
+          <thead><tr><th>Stat</th><th>DPS Weight</th><th>TPS Weight</th><th>AP Equiv</th><th>SP Equiv</th></tr></thead>
+          <tbody id="sw_p4_table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 12px 12px;">
+    <div class="card">
+      <div class="card-header">🔢 Item Comparison Calculator</div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;">Enter stat differences between two items to compare their DPS value (Phase 4 weights).</p>
+        <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:8px; margin-bottom:10px;">
+          <div class="input-group"><label>AP</label><input type="number" id="cmp_ap" value="0" step="1"></div>
+          <div class="input-group"><label>Strength</label><input type="number" id="cmp_str" value="0" step="1"></div>
+          <div class="input-group"><label>Agility</label><input type="number" id="cmp_agi" value="0" step="1"></div>
+          <div class="input-group"><label>Int</label><input type="number" id="cmp_int" value="0" step="1"></div>
+          <div class="input-group"><label>Crit %</label><input type="number" id="cmp_crit" value="0" step="0.01"></div>
+          <div class="input-group"><label>Hit %</label><input type="number" id="cmp_hit" value="0" step="0.01"></div>
+          <div class="input-group"><label>Haste %</label><input type="number" id="cmp_haste" value="0" step="0.01"></div>
+          <div class="input-group"><label>Wep Skill</label><input type="number" id="cmp_wsk" value="0" step="1"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:10px;">
+          <div class="input-group"><label>ArP</label><input type="number" id="cmp_arp" value="0" step="1"></div>
+          <div class="input-group"><label>Spellpower</label><input type="number" id="cmp_sp" value="0" step="1"></div>
+          <div class="input-group"><label>Nature SP</label><input type="number" id="cmp_nsp" value="0" step="1"></div>
+          <div class="input-group"><label>Fire SP</label><input type="number" id="cmp_fsp" value="0" step="1"></div>
+          <div class="input-group"><label>Spell Crit %</label><input type="number" id="cmp_scrit" value="0" step="0.01"></div>
+          <div class="input-group"><label>Spell Hit %</label><input type="number" id="cmp_shit" value="0" step="0.01"></div>
+        </div>
+        <button class="btn btn-primary" onclick="calcItemCompare()">Compare Items</button>
+        <div id="cmp_result" style="margin-top:10px; font-family:'Share Tech Mono',monospace; font-size:14px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB: ARMORY ===================== -->
+<div id="tab-armory" class="tab-content">
+  <div class="card" style="margin:12px;">
+    <div class="card-header">🔍 Armory Import — turtlecraft.gg</div>
+    <div class="card-body">
+      <p style="font-size:13px; color:var(--text2); margin-bottom:16px;">
+        Import your Enhancement Shaman directly from the Turtle WoW armory. The sim will scrape your gear, detect your race, and auto-populate the gear planner.
+      </p>
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:12px;">
+        <div class="input-group" style="flex:1; min-width:180px;">
+          <label>Character Name</label>
+          <input type="text" id="armoryName" placeholder="e.g. Thunderhoof" style="width:100%;" onkeydown="if(event.key==='Enter') runArmoryImport()">
+        </div>
+        <div class="input-group" style="width:180px;">
+          <label>Realm</label>
+          <select id="armoryRealm" style="width:100%;">
+            <option value="Nordanaar" selected>Nordanaar</option>
+            <option value="Tel'Abim">Tel'Abim</option>
+            <option value="Ambershire">Ambershire</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="padding:8px 24px; align-self:flex-end;" onclick="runArmoryImport()">🔍 Fetch Data</button>
+      </div>
+      <div id="armoryStatus" style="font-size:13px; color:var(--text3); min-height:20px; margin-bottom:8px;"></div>
+      <div id="armoryResult"></div>
+    </div>
+  </div>
+  <div class="card" style="margin:0 12px 12px;">
+    <div class="card-header">📋 Manual Stat Import</div>
+    <div class="card-body">
+      <p style="font-size:13px; color:var(--text2); margin-bottom:10px;">
+        Paste your stats from the game's character screen. These values are "in-gear" totals from your character sheet before racial/buff modifiers.
+      </p>
+      <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:8px;">
+        <div class="input-group"><label>Strength (in gear)</label><input type="number" id="import_str" placeholder="744"></div>
+        <div class="input-group"><label>Agility (in gear)</label><input type="number" id="import_agi" placeholder="457"></div>
+        <div class="input-group"><label>Int (in gear)</label><input type="number" id="import_int" placeholder="262"></div>
+        <div class="input-group"><label>Melee AP</label><input type="number" id="import_ap" placeholder="2646"></div>
+        <div class="input-group"><label>Crit % (from gear)</label><input type="number" id="import_crit" placeholder="15" step="0.01"></div>
+        <div class="input-group"><label>Hit % (from gear)</label><input type="number" id="import_hit" placeholder="4" step="0.01"></div>
+        <div class="input-group"><label>Haste % (from gear)</label><input type="number" id="import_haste" placeholder="12.63" step="0.01"></div>
+        <div class="input-group"><label>Weapon Skill</label><input type="number" id="import_wsk" placeholder="315"></div>
+        <div class="input-group"><label>Armor Pen</label><input type="number" id="import_arp" placeholder="250"></div>
+        <div class="input-group"><label>Spellpower</label><input type="number" id="import_sp" placeholder="0"></div>
+        <div class="input-group"><label>Nature SP</label><input type="number" id="import_nsp" placeholder="0"></div>
+        <div class="input-group"><label>Fire SP</label><input type="number" id="import_fsp" placeholder="0"></div>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-gold" onclick="applyManualImport()">✅ Apply to Simulator</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA: GEAR, ENCHANTS, WEAPONS (from Excel)
+// ============================================================
+const GEAR_DB = {"Head":[{"name":"Stormhowl Crown","stats":{"Strength":22,"Agility":26,"Crit %":0.02,"Haste":0.02,"Int":17}},{"name":"Earthshatter Crown","stats":{"Strength":19,"Agility":16,"Crit %":0.02,"Hit %":0.01,"Haste":0.01,"Int":19}},{"name":"Stormcaller's Crown","stats":{"Agility":24,"Int":15,"Spellpower":18}},{"name":"Crown of Ten Storms","stats":{"Strength":15,"Agility":9,"Crit %":0.02,"Hit %":0.01,"Int":13}},{"name":"Crown of Destruction","stats":{"AP":44,"Crit %":0.02,"Int":9}},{"name":"Earthfury Crown","stats":{"Strength":12,"Agility":20,"Crit %":0.01,"Hit %":0.01,"Int":11}},{"name":"Blackstone Crown","stats":{"Strength":10,"Agility":15}},{"name":"Skyfury Helm","stats":{"Strength":13,"Crit %":0.02,"Haste":0.01,"Int":12}},{"name":"Thornweave Mask","stats":{"Strength":15,"Crit %":0.01,"Hit %":0.01}},{"name":"Eye of Rend","stats":{"Strength":13,"Crit %":0.02}}],"Neck":[{"name":"Choker of the Stormhowl","stats":{"Strength":18,"Agility":16,"Crit %":0.02}},{"name":"Choker of Terminal Arcanum","stats":{"Agility":15,"Haste":0.02}},{"name":"Stormrage's Talisman of Seething","stats":{"AP":26,"Crit %":0.02}},{"name":"Barbed Choker","stats":{"AP":44,"Crit %":0.01}},{"name":"Eye of Hakkar","stats":{"AP":40,"Crit %":0.01}},{"name":"Master Dragonslayer's Medallion","stats":{"Agility":14}},{"name":"Onyxia Tooth Pendant","stats":{"Agility":12,"Crit %":0.01,"Hit %":0.01}},{"name":"Medallion of Steadfast Migth","stats":{"Strength":9}},{"name":"Mark of Fordring","stats":{"AP":26,"Crit %":0.01}},{"name":"Crocolisk Tooth Necklace","stats":{"Strength":10,"AP":24,"Int":10}},{"name":"Pendant of Celerity","stats":{"Agility":15,"Hit %":0.01}}],"Shoulders":[{"name":"Stormhowl Pauldrons","stats":{"Strength":20,"Agility":21,"Crit %":0.01,"Haste":0.01,"Int":13}},{"name":"Earthshatter Pauldrons","stats":{"Strength":19,"Agility":18,"Crit %":0.01,"Int":12}},{"name":"Stormcaller's Pauldrons","stats":{"Agility":18,"Hit %":0.01,"Int":10,"Spellpower":13}},{"name":"Mantle of Wicked Revenge","stats":{"Strength":16,"Agility":30}},{"name":"Pauldrons of Ten Storms","stats":{"Strength":16,"Agility":13,"Crit %":0.01,"Armor Pen":25,"Int":11}},{"name":"Runic Stone Shoulders","stats":{"Strength":15,"Crit %":0.01,"Int":15,"Spellpower":16,"Spell Crit":0.01}},{"name":"Earthfury Pauldrons","stats":{"Strength":13,"Agility":15,"Hit %":0.01,"Int":9}},{"name":"Shoulderpads of True Flight","stats":{"Agility":18,"Hit %":0.01,"Int":9}},{"name":"Shoulderguards of the Defiler","stats":{"AP":20,"Hit %":0.02}},{"name":"Stormshroud Shoulders","stats":{"AP":15,"Crit %":0.01,"Hit %":0.01}},{"name":"Pauldrons of Elusiveness","stats":{"Agility":8}},{"name":"Black Dragonscale Shoulders","stats":{"AP":40}}],"Back":[{"name":"Felforged Nathrezan Veil","stats":{"Strength":15,"Agility":29,"Hit %":0.01}},{"name":"Cloak of the Bloody Ravager","stats":{"Strength":18,"Haste":0.02}},{"name":"Shroud of Dominion","stats":{"AP":50,"Crit %":0.01}},{"name":"Shawl of Haunted Memories","stats":{"Strength":10,"AP":40,"Armor Pen":20}},{"name":"Cloak of the Fallen God","stats":{"Strength":11,"Agility":26}},{"name":"Cloak of Draconic Might","stats":{"Strength":16,"Agility":16}},{"name":"Cloak of the Shrouded Mists","stats":{"Agility":26,"Haste":0.01}},{"name":"Wing of the Time-Lord","stats":{"Strength":11,"Agility":11,"Haste":0.01}},{"name":"Royal Guard Chain Cloak","stats":{"AP":24,"Agility":16}},{"name":"Cape of the Black Baron","stats":{"AP":15,"Agility":20}}],"Chest":[{"name":"Stormhowl Breastplate","stats":{"Strength":30,"Agility":30,"Crit %":0.01,"Haste":0.02,"Int":16}},{"name":"Earthshatter Breastplate","stats":{"Strength":30,"Agility":30,"Crit %":0.01,"Haste":0.02,"Int":16}},{"name":"Stormcaller's Breastplate","stats":{"Agility":26,"Hit %":0.01,"Int":16,"Spellpower":23}},{"name":"Breastplate of Ten Storms","stats":{"Strength":24,"Agility":17,"Crit %":0.01,"Haste":0.01,"Int":14}},{"name":"Breastplate of Earthen Might","stats":{"AP":36,"Crit %":0.02,"Armor Pen":50}},{"name":"Earthfury Breastplate","stats":{"Strength":14,"Agility":22,"Crit %":0.01,"Int":12}},{"name":"Savage Gladiator Chain","stats":{"Strength":13,"Agility":14,"Crit %":0.02}},{"name":"Time-blackened Chestpiece","stats":{"AP":22,"Agility":12,"Crit %":0.01,"Hit %":0.01}},{"name":"Black Dragonscale Breastplate","stats":{"AP":50}},{"name":"Hateforge Cuirass","stats":{"Strength":18,"Crit %":0.01,"Haste":0.02}}],"Wrist":[{"name":"Earthshatter Bracelets","stats":{"Strength":16,"Agility":12,"Hit %":0.01,"Int":10}},{"name":"Qiraji Execution Bracers","stats":{"Strength":15,"Agility":16,"Hit %":0.01}},{"name":"Sanctum Bark Wraps","stats":{"Strength":15,"Agility":15,"Haste":0.01}},{"name":"Bracelets of Ten Storms","stats":{"Strength":14,"Agility":6,"Hit %":0.01,"Int":10}},{"name":"Wristguards of True Flight","stats":{"Agility":19,"Hit %":0.01}},{"name":"Earthfury Bracelets","stats":{"Strength":11,"Agility":12,"Int":8}},{"name":"Wristguards of Stability","stats":{"Strength":24}},{"name":"Blackmist Armguards","stats":{"Strength":5,"Hit %":0.01}},{"name":"Cuffs of Nordanaar","stats":{"AP":10,"Agility":14}},{"name":"Bracers of the Stone Princess","stats":{"AP":30,"Int":5}},{"name":"Embergem Cuffs","stats":{"Strength":13}}],"Hands":[{"name":"Handwraps of Dead Winds","stats":{"Strength":20,"Agility":28,"Haste":0.01}},{"name":"Earthshatter Fists","stats":{"Strength":18,"Agility":20,"Crit %":0.01,"Hit %":0.01,"Int":15}},{"name":"Carapace Handguards","stats":{"Strength":15,"Crit %":0.01,"Weapon Skill":6}},{"name":"Fists of Ten Storms","stats":{"Strength":15,"Agility":15,"Crit %":0.01,"Haste":0.01,"Int":10}},{"name":"Flameguard Gauntlets","stats":{"AP":54,"Crit %":0.01,"Weapon Skill":7}},{"name":"Earthfury Fists","stats":{"Strength":10,"Agility":15,"Crit %":0.01,"Int":8}},{"name":"Stormshroud Gloves","stats":{"AP":20,"Hit %":0.01,"Haste":0.01}},{"name":"Gargoyle Slashers","stats":{"Strength":10,"Agility":5,"Crit %":0.01}},{"name":"Voone's Vice Grips","stats":{"Agility":9,"Hit %":0.02}},{"name":"Devilsaur Gauntlets","stats":{"AP":28,"Crit %":0.01}},{"name":"Gauntlets of Kalimdor","stats":{"Strength":14,"Agility":10,"Int":13,"Spellpower":20,"Spell Crit":0.01}}],"Waist":[{"name":"Sash of the Grand Betrayal","stats":{"AP":46,"Crit %":0.02,"Haste":0.02}},{"name":"Earthshatter Girdle","stats":{"Strength":20,"Agility":17,"Crit %":0.01,"Int":14}},{"name":"Primalist's Linked Waistguard","stats":{"Strength":16,"Agility":15,"Haste":0.01,"Int":16,"Spellpower":20}},{"name":"Cloverlink Belt","stats":{"Strength":16,"Agility":16,"Haste":0.02}},{"name":"Therazane's Link","stats":{"AP":44,"Crit %":0.01,"Haste":0.01,"Int":14}},{"name":"Girdle of Ten Storms","stats":{"Strength":18,"Agility":15,"Hit %":0.01,"Int":10}},{"name":"Earthfury Girdle","stats":{"Strength":16,"Agility":12,"Int":9}},{"name":"Marksman's Girdle","stats":{"Agility":21,"Hit %":0.01}}],"Legs":[{"name":"Stormhowl Leggings","stats":{"Strength":27,"Agility":32,"Hit %":0.01,"Haste":0.01,"Int":16}},{"name":"Earthquake Leggings","stats":{"Strength":22,"Agility":30,"Crit %":0.01,"Weapon Skill":6,"Int":28,"Spellpower":30}},{"name":"Earthshatter Leggings","stats":{"Strength":30,"Agility":25,"Crit %":0.01,"Int":19}},{"name":"Stormcaller's Leggings","stats":{"Agility":22,"Hit %":0.01,"Int":15,"Spellpower":23}},{"name":"Scaled Sand Reaver Leggings","stats":{"AP":62,"Crit %":0.02,"Int":10}},{"name":"Ancient Jade Leggings","stats":{"Strength":9,"Agility":26,"Crit %":0.01,"Weapon Skill":8,"Int":16,"Spellpower":15}},{"name":"Leggings of Ten Storms","stats":{"Strength":21,"Agility":16,"Crit %":0.01,"Int":17}},{"name":"Earthfury Leggings","stats":{"Strength":21,"Agility":14,"Crit %":0.01,"Int":18}},{"name":"Legguards of the Chromatic Defier","stats":{"Strength":9,"Agility":30,"Crit %":0.01}},{"name":"Leggings of Alacrity","stats":{"Agility":26}},{"name":"Legplates of the Raider","stats":{"Strength":19,"Agility":19}},{"name":"Deathrune Leggings","stats":{"Strength":10,"Agility":10,"Crit %":0.01}},{"name":"Black Dragonscale Leggings","stats":{"AP":54}},{"name":"Devilsaur Leggings","stats":{"AP":46,"Crit %":0.01}},{"name":"Hateforge Leggings","stats":{"Strength":22,"Hit %":0.01,"Haste":0.01}}],"Feet":[{"name":"Stormhowl Sabatons","stats":{"Strength":21,"Agility":23,"Hit %":0.01,"Armor Pen":25,"Int":13}},{"name":"Earthshatter Sabatons","stats":{"Strength":20,"Agility":22,"Hit %":0.01,"Int":12}},{"name":"Boots of Displacement","stats":{"Agility":30,"Haste":0.02}},{"name":"Stormcaller's Sabatons","stats":{"Agility":18,"Int":10,"Spellpower":13}},{"name":"Wormhide Boots","stats":{"Strength":18,"Agility":32}},{"name":"Sabatons of Ten Storms","stats":{"Strength":15,"Agility":15,"Haste":0.01,"Int":13}},{"name":"Earthfury Sabatons","stats":{"Strength":12,"Agility":16,"Int":16}},{"name":"Greaves of the Elusive","stats":{"Agility":8,"Hit %":0.01}},{"name":"Miasma Walkers","stats":{"Strength":9,"Agility":24}},{"name":"Boots of Flowing Sands","stats":{"Agility":14,"Hit %":0.01}},{"name":"Black Dragonscale Boots","stats":{"AP":34}},{"name":"Hateforge Boots","stats":{"Strength":13,"Haste":0.01}}],"Ring 1":[{"name":"Mephistroth's Cunning","stats":{"Agility":34,"Hit %":0.01,"Haste":0.01}},{"name":"Brand of Karazhan","stats":{"Strength":18,"Hit %":0.01,"Haste":0.01}},{"name":"Signet of the Earthshatterer","stats":{"Strength":15,"Agility":15,"Hit %":0.01,"Int":12}},{"name":"Band of Unnatural Forces","stats":{"AP":52,"Crit %":0.01,"Hit %":0.01}},{"name":"Ring of the Qiraji Fury","stats":{"AP":40,"Crit %":0.01}},{"name":"Signet Ring of the Bronze Dragonflight (DPS)","stats":{"Agility":24,"Hit %":0.01}},{"name":"Master Dragonslayer's Ring","stats":{"AP":48,"Hit %":0.01}},{"name":"Circle of Applied Force","stats":{"Strength":12,"Agility":22}},{"name":"Seal of the Gurubashi Berserker","stats":{"AP":40}},{"name":"Quick Strike Ring","stats":{"Strength":5,"AP":30,"Crit %":0.01}},{"name":"Nethershard Band","stats":{"AP":24,"Crit %":0.01}},{"name":"Painweaver Band","stats":{"AP":16,"Crit %":0.01}},{"name":"Spireblade Band","stats":{"Strength":10,"Agility":5,"Hit %":0.01}},{"name":"Tarnished Elven Ring","stats":{"Agility":15,"Hit %":0.01}},{"name":"Blackstone Ring","stats":{"AP":20,"Hit %":0.01}}],"Ring 2":[{"name":"Mephistroth's Cunning","stats":{"Agility":34,"Hit %":0.01,"Haste":0.01}},{"name":"Brand of Karazhan","stats":{"Strength":18,"Hit %":0.01,"Haste":0.01}},{"name":"Signet of the Earthshatterer","stats":{"Strength":15,"Agility":15,"Hit %":0.01,"Int":12}},{"name":"Band of Unnatural Forces","stats":{"AP":52,"Crit %":0.01,"Hit %":0.01}},{"name":"Ring of the Qiraji Fury","stats":{"AP":40,"Crit %":0.01}},{"name":"Signet Ring of the Bronze Dragonflight (DPS)","stats":{"Agility":24,"Hit %":0.01}},{"name":"Master Dragonslayer's Ring","stats":{"AP":48,"Hit %":0.01}},{"name":"Circle of Applied Force","stats":{"Strength":12,"Agility":22}},{"name":"Seal of the Gurubashi Berserker","stats":{"AP":40}},{"name":"Quick Strike Ring","stats":{"Strength":5,"AP":30,"Crit %":0.01}},{"name":"Nethershard Band","stats":{"AP":24,"Crit %":0.01}},{"name":"Painweaver Band","stats":{"AP":16,"Crit %":0.01}},{"name":"Spireblade Band","stats":{"Strength":10,"Agility":5,"Hit %":0.01}},{"name":"Tarnished Elven Ring","stats":{"Agility":15,"Hit %":0.01}},{"name":"Blackstone Ring","stats":{"AP":20,"Hit %":0.01}}],"Trinket 1":[{"name":"Shieldrender Talisman","stats":{"AP":84}},{"name":"Mark of the Champion (ap)","stats":{"AP":150}},{"name":"Slayer's Crest","stats":{"AP":64}},{"name":"Kiss of the Spider","stats":{"Crit %":0.01,"Hit %":0.01}},{"name":"Heart of Dreams","stats":{"Crit %":0.02,"Haste":0.02}},{"name":"Blackhand's Breadth","stats":{"Crit %":0.02}},{"name":"Hand of Justice","stats":{"AP":20}}],"Trinket 2":[{"name":"Shieldrender Talisman","stats":{"AP":84}},{"name":"Mark of the Champion (ap)","stats":{"AP":150}},{"name":"Slayer's Crest","stats":{"AP":64}},{"name":"Kiss of the Spider","stats":{"Crit %":0.01,"Hit %":0.01}},{"name":"Heart of Dreams","stats":{"Crit %":0.02,"Haste":0.02}},{"name":"Blackhand's Breadth","stats":{"Crit %":0.02}},{"name":"Hand of Justice","stats":{"AP":20}}],"Main Hand":[],"Off Hand":[]};
+
+const ENCHANT_DB = {"Head":[{"name":"(+8 Strength) Lesser Arcanum of Voracity","stats":{"Strength":8}},{"name":"(+8 Agility) Lesser Arcanum of Voracity","stats":{"Agility":8}}],"Neck":[],"Shoulders":[{"name":"Might of the Scourge","stats":{"AP":26,"Crit %":0.01}}],"Back":[],"Chest":[{"name":"(+4 All Stats) Enchant Chest - Greater Stats","stats":{"Strength":4,"Agility":4,"Int":4}},{"name":"(+3 All Stats) Enchant Chest - Stats","stats":{"Strength":3,"Agility":3,"Int":3}}],"Wrist":[{"name":"(+9 Strength) Enchant Bracer - Superior Strength","stats":{"Strength":9}},{"name":"(+7 Strength) Enchant Bracer - Greater Strength","stats":{"Strength":7}},{"name":"(+7 Agility) Enchant Bracer - Greater Agility","stats":{"Agility":7}}],"Hands":[{"name":"(+9 Str) Enchant Gloves - Major Strength","stats":{"Strength":9}},{"name":"(+15 Agility) Enchant Gloves - Superior Agility","stats":{"Agility":15}}],"Waist":[{"name":"(+10 Strength) Obsidian Belt Buckle","stats":{"Strength":10}}],"Legs":[{"name":"(+8 Strength) Lesser Arcanum of Voracity","stats":{"Strength":8}},{"name":"(+8 Agility) Lesser Arcanum of Voracity","stats":{"Agility":8}}],"Feet":[{"name":"(+7 Agility) Enchant Boots - Greater Agility","stats":{"Agility":7}}],"Ring 1":[{"name":"(+3 All Stats) Stunning Imperial Gemstone","stats":{"Strength":3,"Agility":3,"Int":3}},{"name":"(+6 Strength) Azerothian Ruby Gemstone","stats":{"Strength":6}},{"name":"(+6 Agility) Brilliant Opal Gemstone","stats":{"Agility":6}}],"Ring 2":[{"name":"(+3 All Stats) Stunning Imperial Gemstone","stats":{"Strength":3,"Agility":3,"Int":3}},{"name":"(+6 Strength) Azerothian Ruby Gemstone","stats":{"Strength":6}},{"name":"(+6 Agility) Brilliant Opal Gemstone","stats":{"Agility":6}}],"Trinket 1":[],"Trinket 2":[],"Main Hand":[{"name":"Flametongue Weapon","stats":{"Spellpower":0}},{"name":"Windfury Weapon","stats":{"AP":0}},{"name":"Rockbiter Weapon","stats":{"AP":0}},{"name":"(+25 Agility) Enchant 2H Weapon - Agility","stats":{"Agility":25}},{"name":"(+15 Strength) Enchant Weapon - Strength","stats":{"Strength":15}},{"name":"Crusader","stats":{"AP":0}},{"name":"(+30 SP) Enchant Weapon - Spell Power","stats":{"Spellpower":30}}],"Off Hand":[]};
+
+const WEAPON_DB = [{"name":"Shar'tateth, the Shattered Edge","speed":3.8,"min_dmg":307,"max_dmg":453},{"name":"Checkmate","speed":3.7,"min_dmg":273,"max_dmg":419},{"name":"Might of Menethil","speed":3.8,"min_dmg":289,"max_dmg":435},{"name":"Sulfuras, Hand of Ragnaros","speed":3.7,"min_dmg":223,"max_dmg":372},{"name":"Severance","speed":3.6,"min_dmg":242,"max_dmg":366},{"name":"Dark Edge of Insanity","speed":3.5,"min_dmg":242,"max_dmg":364},{"name":"Neretzek","speed":3.7,"min_dmg":202,"max_dmg":303},{"name":"Aspect of Seradane","speed":3.3,"min_dmg":181,"max_dmg":335},{"name":"Drake Talon Cleaver","speed":3.4,"min_dmg":199,"max_dmg":300},{"name":"Fist of the Forgotten Order","speed":3.6,"min_dmg":190,"max_dmg":293},{"name":"Spinal Reaper","speed":3.4,"min_dmg":206,"max_dmg":310},{"name":"The Unstoppable Force","speed":3.8,"min_dmg":175,"max_dmg":292},{"name":"Boneshatter Maul","speed":3.7,"min_dmg":156,"max_dmg":250},{"name":"Arcanite Reaper","speed":3.8,"min_dmg":153,"max_dmg":256},{"name":"Dreadforge Retaliator","speed":3.7,"min_dmg":149,"max_dmg":225},{"name":"Thunderfall, Stormhammer of the Chief Thane","speed":2.8,"min_dmg":167,"max_dmg":286},{"name":"Forgotten Raven's Mallet","speed":2.7,"min_dmg":135,"max_dmg":252},{"name":"The Castigator","speed":2.8,"min_dmg":129,"max_dmg":238},{"name":"Hatchet of Sundered Bone","speed":2.6,"min_dmg":119,"max_dmg":221},{"name":"Remnants of an Old God","speed":2.7,"min_dmg":126,"max_dmg":233},{"name":"Blessed Qiraji War Hammer","speed":2.1,"min_dmg":89,"max_dmg":166},{"name":"Blessed Qiraji War Axe","speed":2.6,"min_dmg":110,"max_dmg":205},{"name":"Mallet of the Awakening","speed":1.8,"min_dmg":76,"max_dmg":140},{"name":"Crul'shorukh, Edge of Chaos","speed":2.3,"min_dmg":101,"max_dmg":188},{"name":"Spineshatter","speed":2.6,"min_dmg":99,"max_dmg":184},{"name":"Claw of the Black Drake","speed":2.6,"min_dmg":102,"max_dmg":191},{"name":"Doom's Edge","speed":2.3,"min_dmg":83,"max_dmg":154},{"name":"Deathbringer","speed":2.9,"min_dmg":114,"max_dmg":213},{"name":"Core Hound Tooth","speed":1.6,"min_dmg":59,"max_dmg":109},{"name":"Nightfall","speed":3.5,"min_dmg":187,"max_dmg":282},{"name":"Elementium Reaper","speed":3.8,"min_dmg":208,"max_dmg":387}];
+
+// ============================================================
+// STAT WEIGHTS (from Excel Phase 3 manual + Phase 4 automatic)
+// ============================================================
+const STAT_WEIGHTS_P3 = {
+  "1 AP":   { dps:0.283013, tps:null,   ap:1,        sp:0.352388, label:"1 AP" },
+  "1 Str":  { dps:0.65659,  tps:null,   ap:2.32,     sp:0.817541, label:"1 Strength" },
+  "1 Agi":  { dps:0.355139, tps:null,   ap:1.254852, sp:0.442195, label:"1 Agility" },
+  "1 Int":  { dps:0.188822, tps:null,   ap:0.667186, sp:0.235109, label:"1 Intellect" },
+  "1% PhCrit": { dps:6.338481, tps:null, ap:22.39644, sp:7.892243, label:"1% Phys Crit" },
+  "1% PhHit":  { dps:4.172825, tps:null, ap:14.744292, sp:5.195716, label:"1% Phys Hit" },
+  "1% Haste":  { dps:5.570203, tps:null, ap:19.681799, sp:6.935635, label:"1% Haste" },
+  "1 WepSkill":{ dps:5.213938, tps:null, ap:18.422969, sp:6.492039, label:"1 Weapon Skill" },
+  "1 ArP":  { dps:0.079045, tps:null,   ap:0.279297, sp:0.098421, label:"1 Armor Pen" },
+  "1 SP":   { dps:0.803128, tps:null,   ap:2.837779, sp:1,        label:"1 Spellpower" },
+  "1 NatSP":{ dps:0.14744,  tps:null,   ap:0.520966, sp:0.183582, label:"1 Nature SP" },
+  "1 FireSP":{ dps:0.655688, tps:null,  ap:2.316813, sp:0.816418, label:"1 Fire SP" },
+  "1% SpCrit":{ dps:9.720245,tps:null,  ap:34.345589,sp:12.102983,label:"1% Spell Crit" },
+  "1% SpHit":{ dps:10.109399,tps:null,  ap:35.720631,sp:12.587532,label:"1% Spell Hit" },
+};
+const STAT_WEIGHTS_P4 = {
+  "1 AP":   { dps:0.475418, tps:0.290155, ap:1,        sp:1.541,    label:"1 AP" },
+  "1 Str":  { dps:1.131496, tps:0.69057,  ap:2.38,     sp:3.66758,  label:"1 Strength" },
+  "1 Agi":  { dps:0.59451,  tps:0.328663, ap:1.250499, sp:1.927019, label:"1 Agility" },
+  "1 Int":  { dps:0.033025, tps:0.023616, ap:0.069466, sp:0.107047, label:"1 Intellect" },
+  "1% PhCrit": { dps:10.376662, tps:5.738457, ap:21.826376, sp:33.634448, label:"1% Phys Crit" },
+  "1% PhHit":  { dps:0,        tps:0,        ap:0,         sp:0,         label:"1% Phys Hit (capped)" },
+  "1% Haste":  { dps:9.948809, tps:null,     ap:20.926426, sp:32.247626, label:"1% Haste" },
+  "1 WepSkill":{ dps:0.415401, tps:null,     ap:0.873758,  sp:1.346461,  label:"1 Weapon Skill" },
+  "1 ArP":  { dps:0.222068, tps:null,     ap:0.4671,    sp:0.719802, label:"1 Armor Pen" },
+  "1 SP":   { dps:0.308513, tps:null,     ap:0.648929,  sp:1,        label:"1 Spellpower" },
+  "1 NatSP":{ dps:0.155959, tps:null,     ap:0.328047,  sp:0.50552,  label:"1 Nature SP" },
+  "1 FireSP":{ dps:0.152553,tps:null,     ap:0.320882,  sp:0.49448,  label:"1 Fire SP" },
+  "1% SpCrit":{ dps:1.700095,tps:null,    ap:3.575997,  sp:5.510612, label:"1% Spell Crit" },
+  "1% SpHit":{ dps:3.55966, tps:null,     ap:7.487424,  sp:11.538122,label:"1% Spell Hit" },
+};
+
+// Slot icons
+const SLOT_ICONS = {
+  Head:"🪖", Neck:"📿", Shoulders:"🛡️", Back:"🧣", Chest:"⛓️",
+  Wrist:"⌚", Hands:"🧤", Waist:"🪢", Legs:"👖", Feet:"👢",
+  "Ring 1":"💍", "Ring 2":"💍", "Trinket 1":"🔮", "Trinket 2":"🔮",
+  "Main Hand":"⚔️", "Off Hand":"🛡️"
+};
+
+const GEAR_SLOTS_ORDER = ["Head","Neck","Shoulders","Back","Chest","Wrist","Hands","Waist","Legs","Feet","Ring 1","Ring 2","Trinket 1","Trinket 2","Main Hand"];
+const GEAR_LEFT = ["Head","Neck","Shoulders","Back","Chest","Wrist","Hands"];
+const GEAR_RIGHT = ["Waist","Legs","Feet","Ring 1","Ring 2","Trinket 1","Trinket 2"];
+
+// State
+var GEAR_SEL = {}; // slot -> item name
+var ENCH_SEL = {}; // slot -> enchant name
+
+// ============================================================
+// UI INIT
+// ============================================================
+window.onload = function() {
+  initWeaponSelect();
+  initGearPlanner();
+  renderStatWeights();
+  renderWeaponList();
+};
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function showProgress(pct) {
+  document.getElementById('progressBar').style.display = 'block';
+  document.getElementById('progressBarFill').style.width = pct + '%';
+}
+function hideProgress() {
+  document.getElementById('progressBar').style.display = 'none';
+  document.getElementById('progressBarFill').style.width = '0%';
+}
+
+function applyBossPreset() {
+  var v = document.getElementById('boss_preset').value;
+  if (!v) return;
+  var [lvl, arm] = v.split(':');
+  document.getElementById('enemy_level').value = lvl;
+  document.getElementById('enemy_armor').value = arm;
+}
+
+function onWeaponChange() {
+  var name = document.getElementById('weapon_select').value;
+  if (name === 'custom') return;
+  var wep = WEAPON_DB.find(w => w.name === name);
+  if (wep) {
+    document.getElementById('stat_wep_min').value = wep.min_dmg;
+    document.getElementById('stat_wep_max').value = wep.max_dmg;
+    document.getElementById('stat_wep_speed').value = wep.speed;
+  }
+}
+
+function initWeaponSelect() {
+  var sel = document.getElementById('weapon_select');
+  WEAPON_DB.forEach(w => {
+    var opt = document.createElement('option');
+    opt.value = w.name;
+    opt.textContent = w.name + ' (' + w.speed + 's)';
+    sel.appendChild(opt);
+  });
+}
+
+function getVal(id, def) {
+  var el = document.getElementById(id);
+  if (!el) return def;
+  if (el.type === 'checkbox') return el.checked;
+  return parseFloat(el.value) || 0;
+}
+function getStr(id, def) {
+  var el = document.getElementById(id);
+  if (!el) return def;
+  return el.value || def;
+}
+
+// ============================================================
+// SIMULATION ENGINE
+// ============================================================
+
+// Simple LCG RNG
+function RNG(seed) {
+  this.s = (seed >>> 0) || 1;
+  this.next = function() {
+    this.s = (Math.imul(1664525, this.s) + 1013904223) >>> 0;
+    return this.s / 0x100000000;
+  };
+  this.range = function(lo, hi) { return lo + this.next() * (hi - lo); };
+  this.roll = function(pct) { return this.next() < pct; };
+}
+
+function getConfig() {
+  var c = {};
+  // Stats
+  c.race = getStr('race', 'Orc');
+  c.str = getVal('stat_str', 300);
+  c.ap_bonus = getVal('stat_ap', 178);
+  c.agi = getVal('stat_agi', 207);
+  c.phys_crit_pct = getVal('stat_crit', 15) / 100;
+  c.phys_hit_pct = getVal('stat_hit', 4) / 100;
+  c.haste_pct = getVal('stat_haste', 12.63) / 100;
+  c.wep_skill = getVal('stat_wep_skill', 315);
+  c.arp = getVal('stat_arp', 250);
+  c.int_val = getVal('stat_int', 94);
+  c.mp5 = getVal('stat_mp5', 0);
+  c.sp = getVal('stat_sp', 0);
+  c.nature_sp = getVal('stat_nature_sp', 0);
+  c.fire_sp = getVal('stat_fire_sp', 0);
+  c.spell_crit_pct = getVal('stat_spell_crit', 0) / 100;
+  c.spell_hit_pct = getVal('stat_spell_hit', 0) / 100;
+  c.wep_min = getVal('stat_wep_min', 307);
+  c.wep_max = getVal('stat_wep_max', 453);
+  c.wep_speed = getVal('stat_wep_speed', 3.8);
+  // Sim
+  c.sim_time = getVal('sim_time', 90);
+  c.sim_count = Math.max(100, getVal('sim_count', 5000));
+  c.vary_duration = getVal('sim_vary', true);
+  // Encounter
+  c.enemy_level = getVal('enemy_level', 63);
+  c.enemy_armor = getVal('enemy_armor', 4611);
+  c.attacking_behind = getVal('attacking_behind', true);
+  c.being_attacked = getVal('being_attacked', false);
+  // Debuffs
+  c.debuff_sunder = Math.min(5, getVal('debuff_sunder', 1));
+  c.debuff_ff = getVal('debuff_ff', true);
+  c.debuff_cor = getVal('debuff_cor', true);
+  c.debuff_imp_ea = getVal('debuff_imp_ea', true);
+  c.debuff_coe = getVal('debuff_coe', true);
+  c.debuff_imp_scorch = getVal('debuff_imp_scorch', true);
+  c.debuff_nightfall = getVal('debuff_nightfall', 1);
+  c.debuff_jow = getVal('debuff_jow', true);
+  c.debuff_tf_stacks = getVal('debuff_tf_stacks', 1);
+  // Talents
+  c.tal_ancestral = getVal('tal_ancestral', 5);
+  c.tal_ts = getVal('tal_ts', 5); // Thundering Strikes
+  c.tal_iss = getVal('tal_iss', 2); // Improved Stormstrike
+  c.tal_flurry = getVal('tal_flurry', 5);
+  c.tal_enh_tot = getVal('tal_enh_tot', 2);
+  c.tal_conc = getVal('tal_conc', 5); // Concussion
+  c.tal_ele_dev = getVal('tal_ele_dev', 3);
+  c.tal_ele_wep = getVal('tal_ele_wep', 3);
+  c.tal_reverb = getVal('tal_reverb', 3); // Reverberation (-0.1s shock CD per point)
+  c.tal_grace = getVal('tal_grace', 5); // Element's Grace (+2% spell hit per point)
+  c.tal_cof = getVal('tal_cof', 2); // Call of Flame (+2% fire spell dmg)
+  c.tal_conv = getVal('tal_conv', 2); // Convection (-2% shock mana)
+  c.tal_ele_foc = getVal('tal_ele_foc', 1); // Elemental Focus (Clearcasting)
+  c.tal_ele_fury = getVal('tal_ele_fury', 0); // +20% spell crit dmg per point
+  c.tal_imp_fire_tot = getVal('tal_imp_fire_tot', 0); // +10% fire totem dmg
+  c.tal_calm = getVal('tal_calm', 3); // Calming Winds - reduces threat from shocks
+  c.tal_med = getVal('tal_med', 0); // Meditation
+  c.tal_spirit_armor = getVal('tal_spirit_armor', 0);
+  c.tal_imp_mb = getVal('tal_imp_mb', 1);
+  c.tal_tot_align = getVal('tal_tot_align', 0);
+  // Buffs
+  c.buff_motw = getVal('buff_motw', true);
+  c.buff_kings = getVal('buff_kings', true);
+  c.buff_might = getVal('buff_might', true);
+  c.buff_bs = getVal('buff_bs', true);
+  c.buff_lotp = getVal('buff_lotp', false);
+  c.buff_ai = getVal('buff_ai', true);
+  c.buff_divine_spirit = getVal('buff_divine_spirit', true);
+  c.buff_bloodlust = getVal('buff_bloodlust', false);
+  c.buff_boomy = getVal('buff_boomy', false);
+  c.buff_salvation = getVal('buff_salvation', true);
+  c.buff_wisdom = getVal('buff_wisdom', true);
+  c.buff_wf_totem = getVal('buff_wf_totem', false);
+  c.buff_soe = getVal('buff_soe', true);
+  c.buff_goa = getVal('buff_goa', true);
+  c.buff_stonebreaker = getVal('buff_stonebreaker', false);
+  c.buff_totem_rage = getVal('buff_totem_rage', false);
+  // Consumables
+  c.consum_mongoose = getVal('consum_mongoose', true);
+  c.consum_firewater = getVal('consum_firewater', true);
+  c.consum_giants = getVal('consum_giants', true);
+  c.consum_roids = getVal('consum_roids', false);
+  c.consum_scorpok = getVal('consum_scorpok', false);
+  c.consum_juju_might = getVal('consum_juju_might', false);
+  c.consum_juju_power = getVal('consum_juju_power', false);
+  c.consum_zanza = getVal('consum_zanza', true);
+  c.consum_arcane_elixir = getVal('consum_arcane_elixir', true);
+  c.consum_nature_power = getVal('consum_nature_power', true);
+  c.consum_fire_power = getVal('consum_fire_power', true);
+  c.consum_dreamtonic = getVal('consum_dreamtonic', true);
+  c.consum_sup_power = getVal('consum_sup_power', true);
+  c.consum_mageblood = getVal('consum_mageblood', true);
+  c.consum_dreamshard = getVal('consum_dreamshard', true);
+  // Mana Items
+  c.num_mana_pots = getVal('num_mana_pots', 2);
+  c.num_rune = getVal('num_rune', 0);
+  c.num_tea = getVal('num_tea', 2);
+  // Sets
+  c.set_t3_2pc = getVal('set_t3_2pc', true);
+  c.set_t3_4pc = getVal('set_t3_4pc', false);
+  c.set_t35_3pc = getVal('set_t35_3pc', true);
+  c.set_t35_5pc = getVal('set_t35_5pc', true);
+  c.set_t25_5pc = getVal('set_t25_5pc', false);
+  c.item_subtlety = getVal('item_subtlety', true);
+  c.item_threat_gloves = getVal('item_threat_gloves', false);
+  c.item_woc = getVal('item_woc', false);
+  c.item_nobility_drape = getVal('item_nobility_drape', false);
+  c.item_sulfuras = getVal('item_sulfuras', false);
+  c.item_neretzek = getVal('item_neretzek', false);
+  c.item_dtc = getVal('item_dtc', false);
+  // Trinkets
+  c.trinket_slayer = getVal('trinket_slayer', false);
+  c.trinket_spider = getVal('trinket_spider', false);
+  c.trinket_earthstrike = getVal('trinket_earthstrike', false);
+  c.trinket_shieldrender = getVal('trinket_shieldrender', false);
+  c.trinket_jomgabbar = getVal('trinket_jomgabbar', false);
+  c.trinket_hoj = getVal('trinket_hoj', false);
+  // Rotation
+  c.shock_priority = getStr('shock_priority', 'earth');
+  c.use_ss = getVal('use_ss', true);
+  c.use_em = getVal('use_em', false);
+  c.self_imbue = getStr('self_imbue', 'flametongue');
+  c.self_fire_totem = getStr('self_fire_totem', 'nova_searing');
+  c.orc_racial = getVal('orc_racial', true);
+  c.wep_skill_book = getVal('wep_skill_book', true);
+  c.use_berserking = getVal('use_berserking', false);
+  c.use_bloodfury = getVal('use_bloodfury', false);
+  return c;
+}
+
+function runCoreSim(cfg, seed) {
+  var rng = new RNG(seed);
+
+  // ---- APPLY ALL BUFFS/CONSUMS/TALENTS TO STATS ----
+  var str = cfg.str;
+  var agi = cfg.agi;
+  var int_v = cfg.int_val;
+  var ap_bonus = cfg.ap_bonus;
+  var sp = cfg.sp;
+  var nature_sp = cfg.nature_sp;
+  var fire_sp = cfg.fire_sp;
+  var spell_crit = cfg.spell_crit_pct;
+  var spell_hit = cfg.spell_hit_pct;
+  var phys_crit = cfg.phys_crit_pct;
+  var phys_hit = cfg.phys_hit_pct;
+  var haste = cfg.haste_pct;
+  var arp = cfg.arp;
+  var wep_skill = cfg.wep_skill;
+
+  // Race base stats (level 60 Enhancement)
+  var base_str = 0, base_agi = 0, base_int = 0, base_ap_from_level = 0;
+  if (cfg.race === 'Orc') { base_str=80; base_agi=60; base_int=60; }
+  else if (cfg.race === 'Troll') { base_str=73; base_agi=75; base_int=56; }
+  else if (cfg.race === 'Tauren') { base_str=85; base_agi=55; base_int=55; }
+
+  // Ancestral Knowledge: +5% max mana per rank
+  var raw_int = base_int + int_v;
+  if (cfg.buff_ai) raw_int += 31;
+  if (cfg.buff_kings) raw_int *= 1.10;
+  var final_int = raw_int;
+  var mana_pool = 20 + 15 * final_int * (1 + cfg.tal_ancestral * 0.02);
+
+  // Consumables: STR
+  if (cfg.consum_giants) str += 25;
+  if (cfg.consum_roids) str += 25;
+  if (cfg.consum_juju_power) str += 30;
+  // AGI
+  if (cfg.consum_mongoose) agi += 25;
+  if (cfg.consum_scorpok) agi += 25;
+  if (cfg.buff_soe) str += 77;
+  if (cfg.buff_goa) agi += 77;
+  if (cfg.buff_might) ap_bonus += 185;
+  if (cfg.buff_bs) ap_bonus += 193;
+  if (cfg.buff_totem_rage) ap_bonus += 50;
+  if (cfg.consum_juju_might) ap_bonus += 40;
+  if (cfg.consum_firewater) ap_bonus += 35;
+  if (cfg.consum_dreamshard) ap_bonus += 20;
+
+  // Kings modifier
+  var kings_mod = cfg.buff_kings ? 1.10 : 1.0;
+  str = (base_str + str) * kings_mod;
+  agi = (base_agi + agi) * kings_mod;
+
+  // Elemental Weapons talent: +SP from weapon imbue
+  var ele_wep_mod = cfg.tal_ele_wep; // 0-3, each adds ~12% flametongue SP coeff
+
+  // SP from consumables
+  var sp_bonus = sp + nature_sp + fire_sp;
+  if (cfg.consum_arcane_elixir) sp_bonus += 150;
+  if (cfg.consum_nature_power) { nature_sp += 20; sp_bonus += 20; }
+  if (cfg.consum_fire_power) { fire_sp += 20; sp_bonus += 20; }
+  if (cfg.consum_sup_power) sp_bonus += 150;
+  if (cfg.consum_dreamtonic) sp_bonus += 100;
+  if (cfg.consum_zanza) sp_bonus += 50;
+  if (cfg.consum_mageblood) {/* mp5 handled later */}
+
+  var total_sp = sp + nature_sp + fire_sp; // raw gear SP
+  // Add consums
+  total_sp += (cfg.consum_arcane_elixir?150:0)+(cfg.consum_nature_power?20:0)+(cfg.consum_fire_power?20:0)+(cfg.consum_sup_power?150:0)+(cfg.consum_dreamtonic?100:0)+(cfg.consum_zanza?50:0);
+
+  // Total fire SP (for FT, fire totems)
+  var final_fire_sp = total_sp + fire_sp; // generic SP + fire SP stack
+  var final_nature_sp = total_sp + nature_sp; // generic SP + nature SP stack
+
+  // AP from stats
+  var total_ap = ap_bonus + str * 2 + agi;
+  if (cfg.buff_bloodlust) haste += 0.20; // simplified Bloodlust
+
+  // Flurry uptime (from talent) - approximation
+  var flurry_ranks = cfg.tal_flurry;
+  var flurry_bonus = [0, 0.05, 0.10, 0.15, 0.20, 0.25][flurry_ranks];
+
+  // Totem of Rage: in config as ap_bonus add above
+
+  // Weapon imbue effect
+  // Flametongue: adds fire spell damage per swing based on weapon speed + SP
+  // FT rank 7: 112-128 damage, coeff 0.1 + 0.04 per Elemental Weapons rank
+  var ft_base_low = 112, ft_base_high = 128;
+  var ft_coeff = 0.10 + ele_wep_mod * 0.04;
+  var ft_dmg_avg = (ft_base_low + ft_base_high) / 2 + total_sp * ft_coeff;
+
+  // Armor calculation
+  var effective_armor = cfg.enemy_armor;
+  effective_armor -= cfg.debuff_sunder * 450;
+  if (cfg.debuff_ff) effective_armor -= 175;
+  if (cfg.debuff_cor) effective_armor -= 640;
+  if (cfg.debuff_imp_ea) effective_armor -= 975;
+  if (cfg.buff_stonebreaker) effective_armor -= 450;
+  effective_armor -= arp;
+  effective_armor -= cfg.debuff_tf_stacks * 175;
+  if (cfg.item_neretzek) effective_armor -= 800; // approximate proc average
+  effective_armor = Math.max(0, effective_armor);
+
+  // Armor DR formula (vanilla WoW)
+  var armor_dr = effective_armor / (effective_armor + 400 + 85 * 63);
+  armor_dr = Math.max(0, Math.min(0.75, armor_dr));
+  var phys_dmg_mult = 1 - armor_dr;
+
+  // Hit chance calculations vs level 63
+  // Miss/dodge chance vs +3 level boss
+  var base_miss = 0.09; // 9% base miss vs L63 boss
+  phys_hit = Math.min(base_miss, phys_hit); // can only reduce to 0%
+  var actual_miss = Math.max(0, base_miss - phys_hit);
+
+  // Weapon skill effect: each point of skill beyond 300 reduces miss by 0.04% and glance penalty
+  var skill_diff = Math.min(wep_skill, 315) - 300; // capped at boss level
+  if (cfg.orc_racial && (getStr('weapon_select','').includes('Axe') || getStr('weapon_select','').includes('Mallet'))) wep_skill += 5;
+  if (cfg.wep_skill_book) wep_skill += 5;
+  wep_skill = Math.min(wep_skill, 315);
+  var wep_skill_bonus = Math.max(0, wep_skill - 300);
+  actual_miss = Math.max(0, actual_miss - wep_skill_bonus * 0.0004);
+
+  var dodge_chance = cfg.attacking_behind ? 0 : 0.05;
+  var block_chance = (cfg.being_attacked && !cfg.attacking_behind) ? 0.05 : 0;
+  var parry_chance = cfg.attacking_behind ? 0 : 0.05;
+  var glance_chance = 0.40;
+  var glance_dmg = 0.95 - Math.max(0, (300 - Math.min(305, cfg.wep_skill + wep_skill_bonus)) * 0.02);
+  glance_dmg = Math.max(0.01, glance_dmg);
+
+  // Crit suppression: 1.8% vs L63 boss
+  var crit_suppression = 0.018;
+  var base_crit = agi / 20 / 100 + phys_crit;
+  var ts_crit_bonus = cfg.tal_ts * 0.01; // Thundering Strikes +1% per rank
+  var lotp_crit = cfg.buff_lotp ? 0.03 : 0;
+  var boomy_crit = cfg.buff_boomy ? 0.03 : 0;
+  var final_crit = Math.max(0, base_crit + ts_crit_bonus + lotp_crit + boomy_crit - crit_suppression);
+
+  // Spell hit
+  var spell_hit_from_grace = cfg.tal_grace * 0.02;
+  var final_spell_hit = spell_hit + spell_hit_from_grace;
+  var spell_miss_vs_boss = Math.max(0, 0.17 - final_spell_hit); // 17% base miss vs +3 level
+
+  // Spell crit
+  var int_crit_bonus = final_int / 59.5 / 100; // approx for shaman
+  var final_spell_crit = spell_crit + int_crit_bonus + (cfg.buff_boomy ? 0.03 : 0);
+  // Elemental Devastation: melee crits grant 3% spell crit for 10s
+  // Simplified: uptime estimation based on melee hit/crit rate
+  var ele_dev_bonus_approx = cfg.tal_ele_dev * 0.01 * 0.95; // ~95% uptime
+  final_spell_crit += ele_dev_bonus_approx;
+  var spell_crit_cap = 0.999;
+  final_spell_crit = Math.min(spell_crit_cap, final_spell_crit);
+
+  // CoE: +10% to nature/fire
+  var magic_dmg_mult = cfg.debuff_coe ? 1.10 : 1.0;
+  // Improved Scorch: +15% fire crit
+  var fire_crit_bonus = cfg.debuff_imp_scorch ? 0.15 : 0;
+  var fire_crit = Math.min(spell_crit_cap, final_spell_crit + fire_crit_bonus);
+
+  // Concussion: +2% shock damage per rank
+  var conc_mult = 1 + cfg.tal_conc * 0.02;
+  // Call of Flame: +fire totem/fire spell dmg
+  var cof_mult = 1 + cfg.tal_cof * 0.05;
+  // Elemental Fury: +100% spell crit damage (instead of +50% base)
+  var spell_crit_mult = 1.5 + cfg.tal_ele_fury * 0.20; // at rank 5: 2.5x
+
+  // Salvation: -30% threat
+  var threat_mult = cfg.buff_salvation ? 0.70 : 1.0;
+  if (cfg.item_subtlety) threat_mult *= 0.98; // -2% threat from Subtlety
+  if (cfg.item_threat_gloves) threat_mult *= 1.05; // +5% threat
+
+  // MH swing timer
+  var swing_speed = cfg.wep_speed / (1 + haste + (cfg.buff_bloodlust ? 0 : 0)); // BL already in haste
+  // WF totem check: WF totem + flametongue imbue doesn't work, WF imbue must be equipped
+  var has_windfury = (cfg.self_imbue === 'windfury') || cfg.buff_wf_totem;
+
+  // Shock CD
+  var shock_cd_base = 6.0 - cfg.tal_reverb * 0.1; // Reverberation reduces by 0.1 per rank
+  // SS CD
+  var ss_cd = 6.0 - cfg.tal_iss * 1.0; // Improved Stormstrike -1s per rank
+
+  // Elemental Focus: clearcasting proc on spell crit
+  var ele_foc = cfg.tal_ele_foc === 1;
+
+  // ---- MANA POOL ----
+  var mp5_val = cfg.mp5;
+  if (cfg.buff_wisdom) mp5_val += 39; // BoW rank7
+  if (cfg.consum_mageblood) mp5_val += 8;
+  if (cfg.consum_dreamshard) mp5_val += 5;
+  if (cfg.debuff_jow) mp5_val += 0; // JoW handled per hit
+  var mp2 = mp5_val * 2 / 5; // MP2
+
+  // Mana pot sizes (Major Mana Potion: 1350-2250)
+  var pot_min = 1350, pot_max = 2250;
+  var tea_mana = 1140; // Night Dragon's Breath Tea (approx)
+  var rune_mana = 1500; // Rune of Power (approx)
+  var jow_mana_per_hit = 65; // JoW mana per melee hit
+
+  // ---- SIMULATION LOOP ----
+  var t = 0;
+  var sim_duration = cfg.sim_time;
+  var mana = mana_pool;
+
+  // Cooldowns
+  var cd = {
+    ss: 0, shock: 0, em: 180, berserking: 180, bloodfury: 120,
+    slayer: 120, spider: 120, earthstrike: 120, jom: 120, shieldrender: 60
+  };
+  var mana_pots_used = 0;
+  var tea_used = 0;
+  var rune_used = 0;
+
+  // Swing timer
+  var next_swing = 0;
+  var flurry_charges = 0;
+
+  // Buffs
+  var clearcasting = false;
+  var flurry_active = false;
+  var em_active = false;
+  var em_end = 0;
+  var slayer_active = false, slayer_end = 0;
+  var spider_active = false, spider_end = 0;
+  var earthstrike_active = false, earthstrike_end = 0;
+  var jom_stacks = 0, jom_start = 0;
+  var t3_4pc_ap = 0, t3_4pc_end = 0;
+  var wf_cooldown = 0; // per-swing WF cooldown (3s)
+  var flame_shock_dot = 0; // next FS tick
+
+  // Results
+  var results = {
+    total_dmg: 0, total_tps: 0,
+    by_source: {},
+    mana_used: 0, mana_regen: 0,
+    num_swings: 0, num_wf: 0, num_ss: 0, num_shock: 0,
+    num_crit: 0, num_miss: 0
+  };
+
+  function addDmg(src, dmg, is_spell, crit, threat_mod) {
+    if (!results.by_source[src]) results.by_source[src] = {dmg:0,count:0,crits:0};
+    results.by_source[src].dmg += dmg;
+    results.by_source[src].count++;
+    if (crit) results.by_source[src].crits++;
+    results.total_dmg += dmg;
+
+    // Threat calculation
+    var base_threat = dmg;
+    if (is_spell) {
+      // Shocks: Calming Winds talent reduces threat by 10% per rank
+      var calm = cfg.tal_calm * 0.10;
+      base_threat *= (1 - calm);
+    }
+    // Totemic Alignment: -25% shock threat
+    if (cfg.tal_tot_align && is_spell) base_threat *= 0.75;
+    base_threat *= threat_mult;
+    if (threat_mod) base_threat *= threat_mod;
+    results.total_tps += base_threat;
+  }
+
+  function useMana(amount) {
+    mana = Math.max(0, mana - amount);
+    results.mana_used += amount;
+  }
+
+  // GCD
+  var gcd = 1.5;
+  var next_gcd = 0;
+
+  // -- MAIN LOOP --
+  var step = 0.01; // 10ms resolution
+  for (t = 0; t <= sim_duration; t += step) {
+
+    // Mana regen (MP2 every 2 seconds)
+    if ((t % 2) < step) {
+      mana = Math.min(mana_pool, mana + mp2);
+      if (cfg.debuff_jow && results.num_swings > 0) {
+        // JoW: ~50% proc on melee hit, so average per hit
+        mana = Math.min(mana_pool, mana + 0);
+      }
+    }
+
+    // Mana pot usage
+    if (mana < mana_pool * 0.35 && mana_pots_used < cfg.num_mana_pots) {
+      mana = Math.min(mana_pool, mana + rng.range(pot_min, pot_max));
+      mana_pots_used++;
+    }
+    if (mana < mana_pool * 0.50 && tea_used < cfg.num_tea) {
+      mana = Math.min(mana_pool, mana + tea_mana);
+      tea_used++;
+    }
+    if (mana < mana_pool * 0.60 && rune_used < cfg.num_rune) {
+      mana = Math.min(mana_pool, mana + rune_mana);
+      rune_used++;
+    }
+
+    // Buff expirations
+    if (slayer_active && t > slayer_end) { slayer_active = false; }
+    if (spider_active && t > spider_end) { spider_active = false; }
+    if (earthstrike_active && t > earthstrike_end) { earthstrike_active = false; }
+    if (em_active && t > em_end) { em_active = false; }
+
+    // JoM Gabbar: stacks grow over 20s
+    if (cfg.trinket_jomgabbar && jom_stacks > 0 && (t - jom_start) < 20) {
+      jom_stacks = Math.floor((t - jom_start) / 1.0); // 1 stack/sec
+    }
+
+    // T3.5 3pc: Forgotten Order proc
+    // ~40% uptime based on Excel data, adds AP
+    var forgotten_order_ap = cfg.set_t35_3pc ? (cfg.wep_speed >= 3.5 ? 160 : 80) * 0.42 : 0;
+    // T3.5 5pc: +5% SS damage
+    var t35_5pc_mult = cfg.set_t35_5pc ? 1.05 : 1.0;
+    // T3 4pc: +30 AP for 10s after SS (uptime ~50%)
+    var t3_4pc_active = (cfg.set_t3_4pc && t < t3_4pc_end);
+    // T3 2pc: +5% WF hit chance
+    var t3_2pc_bonus = cfg.set_t3_2pc ? 0.05 : 0;
+
+    // Trinket AP bonuses (active when proc/use active)
+    var active_ap = total_ap + forgotten_order_ap;
+    if (slayer_active) active_ap += 260;
+    if (earthstrike_active) active_ap += 280;
+    if (cfg.trinket_jomgabbar && jom_stacks > 0) active_ap += jom_stacks * 25;
+    if (t3_4pc_active) active_ap += 30;
+    if (cfg.trinket_hoj) active_ap += 0; // HoJ: extra swing proc, handled separately
+    if (cfg.item_woc) active_ap += 0; // Wrath of Cenarius: +10% nature SP, handled below
+
+    // Shieldrender: -armor per stack
+    var shieldrender_stacks = 0;
+    if (cfg.trinket_shieldrender) {
+      var sr_chance = 0.127; // proc rate per swing
+      // simplified: average armor reduction from proc stacks
+      // Uptime from Excel: ~47%
+      effective_armor = Math.max(0, effective_armor - (cfg.trinket_shieldrender ? 400 * 0.47 : 0));
+    }
+
+    // Spider: +20% haste
+    var active_haste = haste + (spider_active ? 0.20 : 0);
+    var current_swing_speed = cfg.wep_speed / (1 + active_haste);
+
+    // Auto attack
+    if (t >= next_swing) {
+      results.num_swings++;
+      var r = rng.next();
+
+      var miss = rng.roll(actual_miss);
+      var dodge = !miss && !cfg.attacking_behind && rng.roll(dodge_chance);
+      var block_r = !miss && !dodge && cfg.being_attacked && !cfg.attacking_behind && rng.roll(block_chance);
+
+      if (!miss && !dodge) {
+        var is_glance = rng.roll(glance_chance);
+        var is_crit = !is_glance && rng.roll(final_crit);
+
+        var base_dmg = rng.range(cfg.wep_min, cfg.wep_max) + active_ap / 14 * cfg.wep_speed;
+        base_dmg *= phys_dmg_mult;
+        if (is_glance) { base_dmg *= glance_dmg; }
+        else if (is_crit) { base_dmg *= 2; results.num_crit++; }
+        if (block_r) base_dmg -= 38; // average block value
+
+        addDmg('White', base_dmg, false, is_crit, 1.0);
+
+        // Flurry: reset charges on crit
+        if (is_crit && flurry_bonus > 0) { flurry_charges = 3; flurry_active = true; }
+        if (flurry_active && flurry_charges > 0) { flurry_charges--; if (flurry_charges === 0) flurry_active = false; }
+
+        // JoW mana on hit
+        if (cfg.debuff_jow && rng.roll(0.50)) mana = Math.min(mana_pool, mana + jow_mana_per_hit);
+
+        // Windfury Weapon proc (20% chance, 3s CD per swing)
+        if (has_windfury && t >= wf_cooldown && rng.roll(0.20 + t3_2pc_bonus)) {
+          wf_cooldown = t + 3.0;
+          results.num_wf++;
+          // WF: 2 extra melee attacks with +315 AP bonus
+          var wf_ap_bonus = 315;
+          for (var w = 0; w < 2; w++) {
+            if (!rng.roll(actual_miss)) {
+              var wf_crit = rng.roll(final_crit);
+              var wf_dmg = rng.range(cfg.wep_min, cfg.wep_max) + (active_ap + wf_ap_bonus) / 14 * cfg.wep_speed;
+              wf_dmg *= phys_dmg_mult;
+              if (wf_crit) { wf_dmg *= 2; }
+              addDmg('Windfury', wf_dmg, false, wf_crit, 1.0);
+              if (cfg.debuff_jow && rng.roll(0.50)) mana = Math.min(mana_pool, mana + jow_mana_per_hit);
+            }
+          }
+        }
+
+        // Flametongue proc (on every hit when imbued)
+        if (cfg.self_imbue === 'flametongue') {
+          var ft_crit = rng.roll(fire_crit);
+          var ft_hit = !rng.roll(spell_miss_vs_boss);
+          if (ft_hit) {
+            var ft_actual = rng.range(ft_base_low, ft_base_high) + total_sp * ft_coeff;
+            ft_actual *= magic_dmg_mult * cof_mult;
+            if (ft_crit) ft_actual *= spell_crit_mult;
+            addDmg('Flametongue', ft_actual, true, ft_crit, 0.5); // 50% threat for spells
+          }
+        }
+
+        // Rockbiter: extra flat damage (on non-WF hits)
+        if (cfg.self_imbue === 'rockbiter') {
+          var rb_dmg = (238 + active_ap * 0.25) * phys_dmg_mult; // Rank 8 approx
+          if (cfg.set_t25_5pc) rb_dmg *= 1.25;
+          addDmg('Rockbiter', rb_dmg, false, false, 1.25); // 125% threat
+        }
+
+        // HoJ extra attack proc
+        if (cfg.trinket_hoj && rng.roll(0.02)) { // ~2% proc rate per swing
+          var hoj_dmg = rng.range(cfg.wep_min, cfg.wep_max) + active_ap / 14 * cfg.wep_speed;
+          hoj_dmg *= phys_dmg_mult;
+          addDmg('HoJ Proc', hoj_dmg, false, false, 1.0);
+        }
+
+        // Shieldrender proc
+        if (cfg.trinket_shieldrender && rng.roll(0.127)) {
+          // Handled as armor reduction above; also does small physical damage
+          var sr_dmg = 250 * phys_dmg_mult;
+          addDmg('Shieldrender', sr_dmg, false, false, 1.0);
+        }
+
+        // Elemental Devastation: on melee crit, grant spell crit buff (already baked in)
+
+        // Neretzek proc: instant 300 physical dmg
+        if (cfg.item_neretzek && rng.roll(0.05)) {
+          var ntz_dmg = 300 * phys_dmg_mult;
+          addDmg('Neretzek', ntz_dmg, false, false, 1.0);
+        }
+
+        // Sulfuras DoT: fire damage proc
+        if (cfg.item_sulfuras && rng.roll(0.10)) {
+          var sulf_dmg = rng.range(75, 125) * magic_dmg_mult;
+          addDmg('Sulfuras', sulf_dmg, true, false, 0.5);
+        }
+
+        // DTC proc: disease DoT
+        if (cfg.item_dtc && rng.roll(0.05)) {
+          addDmg('DTC', 300, true, false, 0.5);
+        }
+      } else {
+        results.num_miss++;
+      }
+
+      // Next swing: apply flurry haste
+      var flurry_speed_mod = (flurry_active && flurry_charges > 0) ? (1 + flurry_bonus) : 1.0;
+      next_swing = t + current_swing_speed / flurry_speed_mod;
+
+      // Spider trinket proc on swing
+      if (cfg.trinket_spider && t >= cd.spider) {
+        if (rng.roll(0.10)) { // ~10% to use on CD
+          spider_active = true; spider_end = t + 15;
+          cd.spider = t + 120;
+        }
+      }
+    }
+
+    // ---- GCD ABILITIES ----
+    if (t >= next_gcd) {
+      var used_ability = false;
+
+      // Trinket uses (at fight start)
+      if (t < 2) {
+        if (cfg.trinket_slayer && t >= cd.slayer) {
+          slayer_active = true; slayer_end = t + 20; cd.slayer = t + 120;
+        }
+        if (cfg.trinket_earthstrike && t >= cd.earthstrike) {
+          earthstrike_active = true; earthstrike_end = t + 20; cd.earthstrike = t + 120;
+        }
+        if (cfg.trinket_jomgabbar && t >= cd.jom) {
+          jom_stacks = 1; jom_start = t; cd.jom = t + 120;
+        }
+      }
+
+      // Re-use trinkets on CD
+      if (t > 30) {
+        if (cfg.trinket_slayer && t >= cd.slayer) { slayer_active = true; slayer_end = t + 20; cd.slayer = t + 120; }
+        if (cfg.trinket_earthstrike && t >= cd.earthstrike) { earthstrike_active = true; earthstrike_end = t + 20; cd.earthstrike = t + 120; }
+        if (cfg.trinket_jomgabbar && t >= cd.jom) { jom_stacks = 1; jom_start = t; cd.jom = t + 120; }
+      }
+
+      // Elemental Mastery: instant 100% crit for next spell
+      if (cfg.use_em && t >= cd.em) {
+        em_active = true; em_end = t + 30; cd.em = t + 180;
+      }
+
+      // Stormstrike (priority 1)
+      if (cfg.use_ss && t >= cd.ss) {
+        var ss_miss = rng.roll(actual_miss);
+        if (!ss_miss) {
+          var ss_crit = rng.roll(final_crit * 1.5); // melee crit
+          var ss_dmg = rng.range(cfg.wep_min, cfg.wep_max) + active_ap / 14 * cfg.wep_speed;
+          ss_dmg *= phys_dmg_mult * t35_5pc_mult;
+          if (ss_crit) ss_dmg *= 2;
+          addDmg('Stormstrike', ss_dmg, false, ss_crit, 1.2); // 120% threat
+          results.num_ss++;
+
+          // T3 4pc: +30 AP for 10s after SS
+          if (cfg.set_t3_4pc) t3_4pc_end = t + 10;
+        }
+        // SS has 6s CD (reduced by ISS)
+        cd.ss = t + ss_cd;
+        next_gcd = t + gcd;
+        used_ability = true;
+      }
+
+      // Shocks (priority 2)
+      if (!used_ability && t >= cd.shock && cfg.shock_priority !== 'none') {
+        var shock_mana_base = 300;
+        var shock_mana = shock_mana_base * (1 - cfg.tal_conv * 0.02); // Convection
+
+        if (mana >= shock_mana) {
+          useMana(shock_mana);
+          var shock_miss = rng.roll(spell_miss_vs_boss);
+          if (!shock_miss) {
+            if (cfg.shock_priority === 'earth') {
+              // Earth Shock: instant nature dmg
+              var es_base = 517 + 553; // rank 8: 517-553 average
+              es_base = (517 + 553) / 2;
+              var es_dmg = (es_base + final_nature_sp * 0.386) * conc_mult * magic_dmg_mult;
+              // Elemental Focus clearcasting: next spell free + 10% bonus
+              if (clearcasting) { es_dmg *= 1.10; clearcasting = false; }
+              var es_crit = rng.roll(em_active ? 1.0 : final_spell_crit);
+              if (em_active) { em_active = false; }
+              if (es_crit) es_dmg *= spell_crit_mult;
+              addDmg('Earth Shock', es_dmg, true, es_crit, 0.7);
+              results.num_shock++;
+              // Ele Foc: crit procs clearcasting
+              if (ele_foc && es_crit) clearcasting = true;
+            } else if (cfg.shock_priority === 'flame') {
+              // Flame Shock: fire dmg + DoT
+              var fs_instant = 225;
+              var fs_dot_total = 280; // 7 ticks x 40
+              var fs_instant_actual = (fs_instant + final_fire_sp * 0.214) * cof_mult * magic_dmg_mult;
+              if (clearcasting) { fs_instant_actual *= 1.10; }
+              var fs_crit = rng.roll(em_active ? 1.0 : fire_crit);
+              if (em_active) em_active = false;
+              if (fs_crit) fs_instant_actual *= spell_crit_mult;
+              addDmg('Flame Shock', fs_instant_actual, true, fs_crit, 0.7);
+              // DoT
+              for (var tick = 0; tick < 7; tick++) {
+                var dot_dmg = (40 + final_fire_sp * 0.214 / 7) * cof_mult * magic_dmg_mult;
+                addDmg('Flame Shock DoT', dot_dmg, true, false, 0.5);
+              }
+              results.num_shock++;
+              if (ele_foc && fs_crit) clearcasting = true;
+            }
+          }
+          cd.shock = t + shock_cd_base;
+          next_gcd = t + gcd;
+          used_ability = true;
+        }
+      }
+
+      // Fire totems: Magma/Searing (damage output)
+      if (!used_ability && cfg.self_fire_totem === 'nova_searing') {
+        // Searing Totem: handled as continuous damage, not GCD
+      }
+
+      if (!used_ability) {
+        next_gcd = t + 0.5; // check again soon
+      }
+    }
+
+    // Searing Totem: fires every 2.3s
+    if (cfg.self_fire_totem === 'nova_searing') {
+      // Approximate: 12 DPS from Searing Totem at ~0 SP
+      if ((t % 2.3) < step) {
+        var searing_dmg = (50 + final_fire_sp * 0.133) * cof_mult * magic_dmg_mult;
+        if (!rng.roll(spell_miss_vs_boss)) {
+          var st_crit = rng.roll(fire_crit);
+          if (st_crit) searing_dmg *= spell_crit_mult;
+          addDmg('Searing Totem', searing_dmg, true, st_crit, 0.5);
+        }
+      }
+    } else if (cfg.self_fire_totem === 'magma') {
+      // Magma Totem: hits all targets every 2s
+      if ((t % 2.0) < step) {
+        var magma_dmg = (83 + final_fire_sp * 0.167) * cof_mult * magic_dmg_mult * (1 + cfg.tal_imp_fire_tot * 0.10);
+        for (var mt = 0; mt < Math.max(1, getVal('num_targets', 1)); mt++) {
+          if (!rng.roll(spell_miss_vs_boss)) {
+            var mt_crit = rng.roll(fire_crit);
+            if (mt_crit) magma_dmg *= spell_crit_mult;
+            addDmg('Magma Totem', magma_dmg, true, mt_crit, 0.5);
+          }
+        }
+      }
+    }
+
+    // Nobility Drape: % bonus to all SP damage
+    // WoC: +10% nature spell damage (handled via magic_dmg_mult)
+
+    // Berserking (Troll racial: +10-30% haste)
+    if (cfg.use_berserking && cfg.race === 'Troll' && t < 10) {
+      active_haste += 0.10; // simplified
+    }
+  } // end sim loop
+
+  // Fire totem approximation: add flat totals for simulation length
+  // Already handled in loop
+
+  var dps = results.total_dmg / sim_duration;
+  var tps = results.total_tps / sim_duration;
+  var mana_remaining = mana / mana_pool;
+
+  return { dps, tps, mana_remaining, mana_pool, by_source: results.by_source, num_swings: results.num_swings, num_wf: results.num_wf, num_ss: results.num_ss, num_shock: results.num_shock };
+}
+
+function runSimulation() {
+  var cfg = getConfig();
+  var iterations = cfg.sim_count;
+  document.getElementById('simBtn').disabled = true;
+  document.getElementById('simBtn').textContent = 'Simulating...';
+  showProgress(0);
+
+  var allResults = [];
+  var i = 0;
+  var batchSize = 50;
+
+  function batch() {
+    var target = Math.min(iterations, i + batchSize);
+    for (; i < target; i++) {
+      var simCfg = Object.assign({}, cfg);
+      if (cfg.vary_duration && iterations > 1) {
+        var offset = (i - Math.floor(iterations / 2)) * 2.0;
+        simCfg.sim_time = Math.max(10, cfg.sim_time + offset);
+      }
+      var seed = Math.floor(Math.random() * 0xFFFFFFFF);
+      allResults.push(runCoreSim(simCfg, seed));
+    }
+    showProgress((i / iterations) * 100);
+    if (i < iterations) {
+      setTimeout(batch, 0);
+    } else {
+      finalizeResults(allResults, cfg);
+      document.getElementById('simBtn').disabled = false;
+      document.getElementById('simBtn').textContent = '⚡ Run Simulation';
+      hideProgress();
+      showToast('Simulation complete! (' + iterations + ' iterations)');
+    }
+  }
+  setTimeout(batch, 10);
+}
+
+function finalizeResults(allResults, cfg) {
+  var n = allResults.length;
+  var avgDps = allResults.reduce((s, r) => s + r.dps, 0) / n;
+  var avgTps = allResults.reduce((s, r) => s + r.tps, 0) / n;
+  var avgMana = allResults.reduce((s, r) => s + r.mana_remaining, 0) / n;
+
+  // Percentiles
+  var dpsArr = allResults.map(r => r.dps).sort((a,b) => a-b);
+  var p10 = dpsArr[Math.floor(n*0.10)];
+  var p90 = dpsArr[Math.floor(n*0.90)];
+  var minDps = dpsArr[0], maxDps = dpsArr[n-1];
+
+  // Aggregate by_source
+  var sourceTotals = {};
+  allResults.forEach(r => {
+    Object.entries(r.by_source).forEach(([src, data]) => {
+      if (!sourceTotals[src]) sourceTotals[src] = {dmg:0, count:0, crits:0};
+      sourceTotals[src].dmg += data.dmg / n;
+      sourceTotals[src].count += data.count / n;
+      sourceTotals[src].crits += data.crits / n;
+    });
+  });
+
+  var avgSwings = allResults.reduce((s,r) => s + r.num_swings, 0) / n;
+  var avgWF = allResults.reduce((s,r) => s + r.num_wf, 0) / n;
+  var avgSS = allResults.reduce((s,r) => s + r.num_ss, 0) / n;
+  var avgShock = allResults.reduce((s,r) => s + r.num_shock, 0) / n;
+
+  var html = `
+  <div class="result-grid" style="margin-bottom:12px;">
+    <div class="result-card dps"><div class="label">Avg DPS</div><div class="value">${avgDps.toFixed(0)}</div><div class="sub">P10: ${p10.toFixed(0)} | P90: ${p90.toFixed(0)}</div></div>
+    <div class="result-card tps"><div class="label">Avg TPS</div><div class="value">${avgTps.toFixed(0)}</div><div class="sub">${(avgTps/avgDps*100).toFixed(1)}% of DPS as threat</div></div>
+    <div class="result-card"><div class="label">Mana %</div><div class="value" style="color:var(--accent)">${(avgMana*100).toFixed(1)}%</div><div class="sub">remaining at end</div></div>
+    <div class="result-card"><div class="label">Swings/Fight</div><div class="value" style="font-size:20px;color:var(--text)">${avgSwings.toFixed(0)}</div><div class="sub">WF: ${avgWF.toFixed(1)} | SS: ${avgSS.toFixed(1)} | Shock: ${avgShock.toFixed(1)}</div></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+  <div>
+  <div style="font-family:'Cinzel',serif; font-size:11px; color:var(--gold); letter-spacing:1.5px; margin-bottom:6px;">DAMAGE BREAKDOWN</div>
+  <table class="breakdown-table">
+    <tr><th>Source</th><th>DPS</th><th>% Total</th><th style="width:120px">Bar</th><th>Crit%</th></tr>
+    ${Object.entries(sourceTotals)
+      .sort((a,b) => b[1].dmg - a[1].dmg)
+      .map(([src, data]) => {
+        var srcDps = data.dmg / cfg.sim_time;
+        var pct = (data.dmg / (allResults[0].by_source ? 1 : 1)) / avgDps / cfg.sim_time * 100;
+        pct = (srcDps / avgDps * 100);
+        var barClass = src.includes('Strike') || src.includes('White') || src.includes('Windfury') || src.includes('HoJ') ? 'phys' : src.includes('Stormstrike') ? 'ss' : 'magic';
+        var critPct = data.count > 0 ? (data.crits / data.count * 100).toFixed(0) + '%' : '—';
+        return `<tr>
+          <td>${src}</td>
+          <td class="val-right">${srcDps.toFixed(0)}</td>
+          <td class="pct-right">${pct.toFixed(1)}%</td>
+          <td class="bar-cell"><div class="bar-bg"><div class="bar-fill ${barClass}" style="width:${Math.min(100,pct).toFixed(0)}%"></div></div></td>
+          <td class="pct-right">${critPct}</td>
+        </tr>`;
+      }).join('')}
+  </table>
+  </div>
+  <div>
+  <div style="font-family:'Cinzel',serif; font-size:11px; color:var(--gold); letter-spacing:1.5px; margin-bottom:6px;">FIGHT STATS</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:12px;">
+    <div style="color:var(--text3);">Fight Duration:</div><div>${cfg.sim_time}s (±${cfg.vary_duration?'smear':'fixed'})</div>
+    <div style="color:var(--text3);">DPS Range:</div><div style="font-family:'Share Tech Mono',monospace;">${minDps.toFixed(0)} – ${maxDps.toFixed(0)}</div>
+    <div style="color:var(--text3);">Phys Dmg Share:</div><div>${(Object.entries(sourceTotals).filter(([s]) => ['White','Windfury','Stormstrike','Rockbiter','HoJ Proc'].includes(s)).reduce((a,[,d]) => a+d.dmg,0) / allResults[0].by_source ? 1 : 1) > 0 ? ((Object.entries(sourceTotals).filter(([s]) => ['White','Windfury','Stormstrike','Rockbiter','HoJ Proc','Neretzek','Shieldrender'].includes(s)).reduce((a,[,d]) => a+d.dmg,0)) / (avgDps * cfg.sim_time) * 100).toFixed(1) + '%' : 'N/A'}</div>
+    <div style="color:var(--text3);">Iterations:</div><div>${n.toLocaleString()}</div>
+  </div>
+  </div>
+  </div>`;
+
+  document.getElementById('resultArea').innerHTML = html;
+}
+
+function clearResults() {
+  document.getElementById('resultArea').innerHTML = `<div class="no-results"><div class="icon">⚡</div><div>Configure your character and click <strong>Run Simulation</strong></div></div>`;
+}
+
+// ============================================================
+// GEAR PLANNER
+// ============================================================
+function initGearPlanner() {
+  var left = document.getElementById('gearLeft');
+  var right = document.getElementById('gearRight');
+  left.innerHTML = '';
+  right.innerHTML = '';
+  GEAR_LEFT.forEach(slot => left.appendChild(makeGearSlot(slot)));
+  GEAR_RIGHT.forEach(slot => right.appendChild(makeGearSlot(slot)));
+  updateGearEP();
+}
+
+function makeGearSlot(slot) {
+  var div = document.createElement('div');
+  div.className = 'gear-slot';
+  var items = GEAR_DB[slot] || [];
+  var enchants = ENCHANT_DB[slot] || [];
+
+  var enchOpts = enchants.length ? `<div class="gear-slot-ench"><select id="ench_${slot.replace(' ','_')}" onchange="updateGearEP()">
+    <option value="">— No Enchant —</option>
+    ${enchants.map(e => `<option value="${e.name}">${e.name}</option>`).join('')}
+  </select></div>` : '';
+
+  div.innerHTML = `<div class="gear-slot-name">${SLOT_ICONS[slot]||'●'} ${slot}</div>
+  <div class="gear-slot-body">
+    <select id="slot_${slot.replace(/ /g,'_')}" onchange="updateGearEP()">
+      <option value="">— Empty —</option>
+      ${items.map(i => `<option value="${i.name}">${i.name}</option>`).join('')}
+    </select>
+    ${enchOpts}
+    <div class="gear-ep" id="ep_${slot.replace(/ /g,'_')}">EP: 0</div>
+  </div>`;
+  return div;
+}
+
+function getWeightMode() { return document.getElementById('gear_weight_mode').value; }
+
+function calcItemEP(item) {
+  var mode = getWeightMode();
+  var wts = STAT_WEIGHTS_P4;
+  var total = 0;
+  var s = item.stats;
+  var w = {
+    dps: { AP:0.475418, Strength:1.131496, Agility:0.59451, Int:0.033025, 'Crit %':10.376662*100, 'Hit %':0*100, Haste:9.948809*100, 'Weapon Skill':0.415401, 'Armor Pen':0.222068, Spellpower:0.308513, 'Nature Spellpower':0.155959, 'Fire Spellpower':0.152553, 'Spell Crit':1.700095*100, 'Spell Hit':3.55966*100 },
+    tps: { AP:0.290155, Strength:0.69057, Agility:0.328663, Int:0.023616, 'Crit %':5.738457*100, 'Hit %':0*100, Haste:0, 'Weapon Skill':0, 'Armor Pen':0, Spellpower:0, 'Nature Spellpower':0, 'Fire Spellpower':0, 'Spell Crit':0, 'Spell Hit':0 },
+    ap: { AP:1, Strength:2.38, Agility:1.250499, Int:0.069466, 'Crit %':21.826376*100, 'Hit %':0*100, Haste:20.926426*100, 'Weapon Skill':0.873758, 'Armor Pen':0.4671, Spellpower:0.648929, 'Nature Spellpower':0.328047, 'Fire Spellpower':0.320882, 'Spell Crit':3.575997*100, 'Spell Hit':7.487424*100 }
+  };
+  var wt = w[mode] || w.dps;
+  Object.entries(s).forEach(([stat, val]) => {
+    if (wt[stat] !== undefined) total += val * wt[stat];
+  });
+  return total;
+}
+
+function updateGearEP() {
+  var totalEP = 0;
+  GEAR_SLOTS_ORDER.forEach(slot => {
+    var selId = 'slot_' + slot.replace(/ /g,'_');
+    var enchId = 'ench_' + slot.replace(/ /g,'_');
+    var sel = document.getElementById(selId);
+    var ench = document.getElementById(enchId);
+    if (!sel) return;
+    var ep = 0;
+    var itemName = sel.value;
+    if (itemName) {
+      var items = GEAR_DB[slot] || [];
+      var item = items.find(i => i.name === itemName);
+      if (item) ep += calcItemEP(item);
+    }
+    if (ench && ench.value) {
+      var enchants = ENCHANT_DB[slot] || [];
+      var enchItem = enchants.find(e => e.name === ench.value);
+      if (enchItem) ep += calcItemEP(enchItem);
+    }
+    var epEl = document.getElementById('ep_' + slot.replace(/ /g,'_'));
+    if (epEl) epEl.textContent = 'EP: ' + ep.toFixed(0);
+    totalEP += ep;
+  });
+  document.getElementById('totalEP').textContent = totalEP.toFixed(0);
+}
+
+// ============================================================
+// WEAPON LIST IN GEAR TAB
+// ============================================================
+function renderWeaponList() {
+  var wl = document.getElementById('weaponList');
+  if (!wl) return;
+  var mode = 'dps';
+  var wt_ap = 0.475418; // 1AP = 0.475 DPS
+  var html = '<table class="breakdown-table"><tr><th>Weapon</th><th>Speed</th><th>Min-Max</th><th>DPS Score</th></tr>';
+  WEAPON_DB.forEach(w => {
+    var avg = (w.min_dmg + w.max_dmg) / 2;
+    var dps_equiv = avg / w.speed;
+    html += `<tr><td>${w.name}</td><td>${w.speed}</td><td>${w.min_dmg}–${w.max_dmg}</td><td class="val-right">${dps_equiv.toFixed(1)}</td></tr>`;
+  });
+  html += '</table>';
+  wl.innerHTML = html;
+}
+
+// ============================================================
+// STAT WEIGHTS TAB
+// ============================================================
+function renderStatWeights() {
+  renderSWTable('sw_p3_table', 'sw_p3_bars', STAT_WEIGHTS_P3);
+  renderSWTable('sw_p4_table', 'sw_p4_bars', STAT_WEIGHTS_P4);
+}
+
+function renderSWTable(tableId, barsId, weights) {
+  var tbody = document.getElementById(tableId);
+  var bars = document.getElementById(barsId);
+  if (!tbody) return;
+  var rows = Object.values(weights);
+  var maxDps = Math.max(...rows.map(r => r.dps));
+  var html = '';
+  rows.forEach(r => {
+    html += `<tr>
+      <td class="stat-name">${r.label}</td>
+      <td class="sw-val">${r.dps.toFixed(4)}</td>
+      <td class="sw-val" style="color:var(--gold)">${r.tps != null ? r.tps.toFixed(4) : '—'}</td>
+      <td class="sw-ap">${r.ap.toFixed(4)}</td>
+      <td class="sw-ap" style="color:var(--accent)">${r.sp.toFixed(4)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+
+  // Bars
+  if (bars) {
+    var bHtml = '';
+    rows.sort((a,b) => b.dps - a.dps).forEach(r => {
+      var pct = (r.dps / maxDps * 100).toFixed(0);
+      bHtml += `<div class="sw-bar-row">
+        <div class="sw-bar-label">${r.label}</div>
+        <div class="sw-bar-track"><div class="sw-bar-fill" style="width:${pct}%"></div></div>
+        <div class="sw-bar-val">${r.dps.toFixed(2)}</div>
+      </div>`;
+    });
+    bars.innerHTML = bHtml;
+  }
+}
+
+// ============================================================
+// ITEM COMPARATOR
+// ============================================================
+function calcItemCompare() {
+  var w = STAT_WEIGHTS_P4;
+  var wmap = {
+    ap: 'AP', str: 'Str', agi: 'Agi', int: 'Int',
+    crit: 'PhCrit', hit: 'PhHit', haste: 'Haste', wsk: 'WepSkill',
+    arp: 'ArP', sp: 'SP', nsp: 'NatSP', fsp: 'FireSP',
+    scrit: 'SpCrit', shit: 'SpHit'
+  };
+  var keymap = { ap:'1 AP', str:'1 Str', agi:'1 Agi', int:'1 Int', crit:'1% PhCrit', hit:'1% PhHit', haste:'1% Haste', wsk:'1 WepSkill', arp:'1 ArP', sp:'1 SP', nsp:'1 NatSP', fsp:'1 FireSP', scrit:'1% SpCrit', shit:'1% SpHit' };
+  var total_dps = 0, total_ap = 0;
+  var breakdown = [];
+  Object.entries(keymap).forEach(([inp, key]) => {
+    var val = parseFloat(document.getElementById('cmp_' + inp).value) || 0;
+    if (val === 0) return;
+    var sw = w[key];
+    if (!sw) return;
+    var contribution = val * sw.dps;
+    total_dps += contribution;
+    total_ap += val * sw.ap;
+    if (Math.abs(contribution) > 0.01) breakdown.push(`${sw.label}: ${val > 0 ? '+' : ''}${val} × ${sw.dps.toFixed(3)} = <span style="color:${contribution>0?'var(--green)':'var(--red)'}">+${contribution.toFixed(2)} DPS</span>`);
+  });
+  var res = document.getElementById('cmp_result');
+  var color = total_dps > 0 ? 'var(--green)' : total_dps < 0 ? 'var(--red)' : 'var(--text3)';
+  res.innerHTML = `<div style="color:${color}; font-size:18px; margin-bottom:8px;">Δ DPS: ${total_dps > 0 ? '+' : ''}${total_dps.toFixed(2)}</div>
+  <div style="color:var(--gold); margin-bottom:8px;">Δ AP Equiv: ${total_ap > 0 ? '+' : ''}${total_ap.toFixed(1)}</div>
+  <div style="font-size:12px; color:var(--text3); line-height:1.8;">${breakdown.join('<br>')}</div>`;
+}
+
+// ============================================================
+// ARMORY IMPORT — matches feral-sim approach (turtlecraft.gg via worker)
+// ============================================================
+
+async function runArmoryImport() {
+  var name = document.getElementById('armoryName').value.trim();
+  var realm = document.getElementById('armoryRealm').value;
+  var status = document.getElementById('armoryStatus');
+  var result = document.getElementById('armoryResult');
+
+  if (!name) {
+    status.innerHTML = '<span style="color:var(--red);">Please enter a character name.</span>';
+    return;
+  }
+
+  status.innerHTML = '⏳ Fetching HTML from turtlecraft.gg...';
+  status.style.color = 'var(--text3)';
+  result.innerHTML = '';
+
+  var targetUrl = 'https://turtlecraft.gg/armory/' + realm + '/' + name;
+
+  // Proxy chain — try each in order until one works (same target as feral sim)
+  var proxies = [
+    'https://turtle-armory.johnrdoe89.workers.dev/?url=',       // feral sim's own worker
+    'https://corsproxy.io/?url=',                                // reliable public CORS proxy
+    'https://api.allorigins.win/raw?url=',                       // fallback
+  ];
+
+  var htmlText = null;
+  var lastError = null;
+
+  for (var pi = 0; pi < proxies.length; pi++) {
+    try {
+      var finalUrl = proxies[pi] + encodeURIComponent(targetUrl);
+      status.innerHTML = '⏳ Fetching from turtlecraft.gg' + (pi > 0 ? ' (proxy ' + (pi+1) + ')' : '') + '...';
+      var resp = await fetch(finalUrl, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      htmlText = await resp.text();
+      if (htmlText && htmlText.length > 500) break; // got a real response
+      htmlText = null;
+    } catch (e) {
+      lastError = e;
+      console.warn('Proxy ' + pi + ' failed:', e.message);
+    }
+  }
+
+  try {
+    if (!htmlText) {
+      throw new Error(
+        'All proxies failed. This usually means:\n' +
+        '• The character "' + name + '" does not exist on ' + realm + '\n' +
+        '• Or turtlecraft.gg is temporarily unavailable\n' +
+        '(Last error: ' + (lastError ? lastError.message : 'unknown') + ')'
+      );
+    }
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(htmlText, 'text/html');
+
+    // Extract race from the page JSON (same logic as feral sim)
+    var raceString = 'Orc'; // Shaman fallback
+    var raceMatch = htmlText.match(/&quot;race&quot;:(\d+)/) || htmlText.match(/"race":(\d+)/);
+    if (raceMatch) {
+      var rId = parseInt(raceMatch[1]);
+      if (rId === 2) raceString = 'Orc';
+      else if (rId === 8) raceString = 'Troll';
+      else if (rId === 6) raceString = 'Tauren';
+    }
+
+    // Extract class to warn if not shaman
+    var classMatch = htmlText.match(/&quot;class&quot;:(\d+)/) || htmlText.match(/"class":(\d+)/);
+    var classId = classMatch ? parseInt(classMatch[1]) : 0;
+    // Class 7 = Shaman in WoW classic
+
+    // Extract items using the same dual-method as feral sim
+    var uniqueFoundItems = extractItemsFromHtml(doc, htmlText);
+
+    if (uniqueFoundItems.length === 0) {
+      throw new Error('No items found on the page. Character might be naked or have a private profile.');
+    }
+
+    // Apply to gear planner
+    var matchResults = applyImportData(uniqueFoundItems, raceString, name);
+
+    // Build status message
+    var classWarn = (classId !== 0 && classId !== 7)
+      ? '<br><span style="color:var(--orange);">⚠️ Warning: Character may not be a Shaman (class ID: ' + classId + ')</span>'
+      : '';
+
+    var matchColor = matchResults.matched > 0 ? 'var(--green)' : 'var(--red)';
+    var matchMsg = matchResults.matched > 0
+      ? '<span style="color:' + matchColor + '">✅ Successfully imported ' + matchResults.matched + ' items.</span>'
+      : '<span style="color:var(--red)">❌ No items matched the local database.</span>';
+
+    var skipNote = (uniqueFoundItems.length - matchResults.matched) > 0
+      ? '<br><span style="font-size:11px; color:var(--text3);">(' + (uniqueFoundItems.length - matchResults.matched) + ' item IDs not in local DB — only Enh Shaman items are included)</span>'
+      : '';
+
+    status.innerHTML = '🔍 Armory scan: Found ' + uniqueFoundItems.length + ' unique item IDs.<br>' + matchMsg + skipNote + classWarn;
+
+    // Show result summary
+    if (matchResults.matched > 0) {
+      result.innerHTML = '<div style="background:var(--bg3); border:1px solid var(--border2); border-radius:6px; padding:12px; margin-top:8px;">'
+        + '<div style="font-family:\'Cinzel\',serif; color:var(--gold); margin-bottom:8px;">📋 ' + name + ' — ' + realm + '</div>'
+        + '<div style="font-size:12px; color:var(--text2);">Race detected: <strong>' + raceString + '</strong></div>'
+        + '<div style="font-size:12px; color:var(--text3); margin-top:6px;">Gear has been applied to the <strong>Gear Planner</strong> tab. Switch there to review your items.</div>'
+        + '<div style="margin-top:10px; display:flex; gap:8px;">'
+        + '<button class="btn btn-primary btn-sm" onclick="switchTabDirect(\'gear\')">Go to Gear Planner →</button>'
+        + '</div>'
+        + '</div>';
+    }
+
+  } catch (e) {
+    console.error('Armory import error:', e);
+    status.innerHTML = '<span style="color:var(--red);">❌ ' + e.message.replace(/\n/g, '<br>') + '</span>'
+      + '<br><span style="font-size:11px; color:var(--text3); margin-top:6px; display:block;">Tip: Make sure the character exists on <strong>' + realm + '</strong> and has a public profile on turtlecraft.gg</span>';
+  }
+}
+
+function extractItemsFromHtml(doc, htmlText) {
+  var foundMap = new Map();
+
+  // Method 1: item links in the page
+  var links = doc.querySelectorAll('a[href*="item="]');
+  links.forEach(function(a) {
+    var href = a.getAttribute('href');
+    var itemMatch = href.match(/item=(\d+)/);
+    if (itemMatch) {
+      var iId = parseInt(itemMatch[1]);
+      if (!foundMap.has(iId)) foundMap.set(iId, { itemId: iId });
+    }
+  });
+
+  // Method 2: hidden JSON in page source (itemEntry + enchantments) — same regex as feral sim
+  var regex = /&quot;itemEntry&quot;:(\d+)[^}]*?&quot;enchantments&quot;:(\d+)/g;
+  var match;
+  while ((match = regex.exec(htmlText)) !== null) {
+    var iId = parseInt(match[1]);
+    var eId = parseInt(match[2]);
+    if (foundMap.has(iId)) {
+      foundMap.get(iId).effectId = eId;
+    } else {
+      foundMap.set(iId, { itemId: iId, effectId: eId });
+    }
+  }
+
+  return Array.from(foundMap.values());
+}
+
+// Item ID map for matching armory IDs to our local gear DB
+// We build this from the gear name → armory item ID mapping
+// Since our DB uses names not IDs, we do fuzzy name matching
+var ARMORY_ITEM_ID_MAP = {}; // populated below
+
+function buildArmoryIdMap() {
+  // Known Turtle WoW item IDs for Enhancement Shaman items
+  // These are the most commonly equipped items — extend as needed
+  var knownIds = {
+    // Head
+    216415: { slot: 'Head', name: 'Stormhowl Crown' },
+    216410: { slot: 'Head', name: 'Earthshatter Crown' },
+    23002:  { slot: 'Head', name: 'Crown of Destruction' },
+    22983:  { slot: 'Head', name: 'Eye of Rend' },
+    // Neck
+    216416: { slot: 'Neck', name: 'Choker of the Stormhowl' },
+    19928:  { slot: 'Neck', name: 'Barbed Choker' },
+    19879:  { slot: 'Neck', name: 'Eye of Hakkar' },
+    19382:  { slot: 'Neck', name: "Master Dragonslayer's Medallion" },
+    19381:  { slot: 'Neck', name: 'Onyxia Tooth Pendant' },
+    // Shoulders
+    216417: { slot: 'Shoulders', name: 'Stormhowl Pauldrons' },
+    16841:  { slot: 'Shoulders', name: 'Earthfury Pauldrons' },
+    23072:  { slot: 'Shoulders', name: 'Stormshroud Shoulders' },
+    // Back
+    23206:  { slot: 'Back', name: 'Shroud of Dominion' },
+    19888:  { slot: 'Back', name: 'Cloak of the Fallen God' },
+    // Chest
+    216418: { slot: 'Chest', name: 'Stormhowl Breastplate' },
+    16840:  { slot: 'Chest', name: 'Earthfury Breastplate' },
+    // Hands
+    216421: { slot: 'Hands', name: 'Handwraps of Dead Winds' },
+    // Waist
+    216422: { slot: 'Waist', name: 'Earthshatter Girdle' },
+    // Legs
+    216423: { slot: 'Legs', name: 'Stormhowl Leggings' },
+    // Feet
+    216424: { slot: 'Feet', name: 'Stormhowl Sabatons' },
+    // Rings
+    23038:  { slot: 'Ring 1', name: "Master Dragonslayer's Ring" },
+    19397:  { slot: 'Ring 1', name: 'Ring of the Qiraji Fury' },
+    // Trinkets
+    23041:  { slot: 'Trinket 1', name: "Slayer's Crest" },
+    23047:  { slot: 'Trinket 1', name: 'Kiss of the Spider' },
+    // Weapons
+    216340: { slot: 'Main Hand', name: "Shar'tateth, the Shattered Edge" },
+    17182:  { slot: 'Main Hand', name: 'Sulfuras, Hand of Ragnaros' },
+    19364:  { slot: 'Main Hand', name: 'Spinal Reaper' },
+    21581:  { slot: 'Main Hand', name: 'The Unstoppable Force' },
+    13262:  { slot: 'Main Hand', name: 'Arcanite Reaper' },
+    12783:  { slot: 'Main Hand', name: 'Nightfall' },
+  };
+  Object.entries(knownIds).forEach(([id, data]) => {
+    ARMORY_ITEM_ID_MAP[parseInt(id)] = data;
+  });
+}
+
+function applyImportData(importedItems, race, charName) {
+  var matched = 0;
+
+  // Set race in simulator
+  var raceSel = document.getElementById('race');
+  if (raceSel && race) raceSel.value = race;
+
+  // Try to match each item ID to our gear planner
+  importedItems.forEach(function(entry) {
+    var known = ARMORY_ITEM_ID_MAP[entry.itemId];
+    if (!known) return;
+
+    var slot = known.slot;
+    var itemName = known.name;
+    var selId = 'slot_' + slot.replace(/ /g, '_');
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+
+    // Check if the item name exists in the dropdown
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === itemName) {
+        sel.value = itemName;
+        matched++;
+        break;
+      }
+    }
+  });
+
+  updateGearEP();
+  return { matched };
+}
+
+function switchTabDirect(t) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.textContent.toLowerCase().includes(t === 'gear' ? 'gear' : t)) btn.classList.add('active');
+  });
+}
+
+// Build the ID map on load
+buildArmoryIdMap();
+
+function applyManualImport() {
+  var fields = [
+    ['import_str', 'stat_str'],
+    ['import_agi', 'stat_agi'],
+    ['import_int', 'stat_int'],
+    ['import_ap', 'stat_ap'],
+    ['import_crit', 'stat_crit'],
+    ['import_hit', 'stat_hit'],
+    ['import_haste', 'stat_haste'],
+    ['import_wsk', 'stat_wep_skill'],
+    ['import_arp', 'stat_arp'],
+    ['import_sp', 'stat_sp'],
+    ['import_nsp', 'stat_nature_sp'],
+    ['import_fsp', 'stat_fire_sp'],
+  ];
+  fields.forEach(([from, to]) => {
+    var val = document.getElementById(from).value;
+    if (val) document.getElementById(to).value = val;
+  });
+  switchTab('sim');
+  document.querySelectorAll('.tab-btn')[0].click();
+  showToast('Stats imported to Simulator!');
+}
+</script>
+</body>
+</html>
