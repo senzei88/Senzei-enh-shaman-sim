@@ -1209,7 +1209,7 @@ function updateWepSkillDisplay() {
   // From spreadsheet chart: glance% = min(65 + (skill-300)*2, 95)
   var glancePct = Math.min(65 + (totalSkill - 300) * 2, 95);
   // Miss = 8% base - 0.04% per skill point above 300
-  var missPct = Math.max(0, 8.0 - (totalSkill - 300) * 0.04);
+  var missPct = Math.max(0, 8.0 - (totalSkill - 300) * 0.20); // 0.20% per point per chart
   var hitCap = missPct;
 
   var el = document.getElementById('gp_wepskill');
@@ -1731,7 +1731,7 @@ function runCoreSim(cfg, seed) {
   if(cfg.wep_skill_book)wep_skill+=5;
   wep_skill=Math.min(wep_skill,315);
   var base_miss=0.10; // FIX: 10%
-  var actual_miss=Math.max(0,base_miss-phys_hit-Math.max(0,wep_skill-300)*0.0004);
+  var actual_miss=Math.max(0,base_miss-phys_hit-Math.max(0,wep_skill-300)*0.002); // 0.20% per skill point per chart
   var dodge_chance=cfg.attacking_behind?0:0.05;
   var glance_chance=0.40;
   // FIX: glancing damage scales with weapon skill
@@ -2147,7 +2147,7 @@ function finalizeResults(allResults, cfg) {
 // ============================================================
 let GEAR_DB = {};
 
-const ENCHANT_DB = {"Wrist":[{"name":"Enchant Bracer - Agility (+5 Agi)","stats":{"Agility":5},"effect_id":904},{"name":"Enchant Bracer - Deflection (+3 Defense)","stats":{},"effect_id":923},{"name":"Enchant Bracer - Greater Agility (+7 Agi)","stats":{"Agility":7},"effect_id":1887},{"name":"Enchant Bracer - Greater Deflection (+5 Defense)","stats":{},"effect_id":3024},{"name":"Enchant Bracer - Greater Intellect (+7 Int)","stats":{"Int":7},"effect_id":1883},{"name":"Enchant Bracer - Greater Spirit (+7 Spi)","stats":{"Spirit":7},"effect_id":907},{"name":"Enchant Bracer - Greater Stamina (+7 Stam)","stats":{"Stamina":7},"effect_id":929},{"name":"Enchant Bracer - Healing (+24 Healing)","stats":{"Spellpower":24},"effect_id":2566},{"name":"Enchant Bracer - Lesser Deflection (+2 Defense)","stats":{},"effect_id":925},{"name":"Enchant Bracer - Lesser Spirit (+3 Spi)","stats":{"Spirit":3},"effect_id":255},{"name":"Enchant Bracer - Lesser Strength (+3 Str)","stats":{"Strength":3},"effect_id":823},{"name":"Enchant Bracer - Mana Regeneration (+4 Mana)","stats":{"MP5":4},"effect_id":2565},{"name":"Enchant Bracer - Minor Spirit (+1 Spi)","stats":{"Spirit":1},"effect_id":243},{"name":"Enchant Bracer - Minor Strength (+1 Str)","stats":{"Strength":1},"effect_id":248},{"name":"Enchant Bracer - Spell Power (+12 Spelldamage)","stats":{"Spellpower":12},"effect_id":432},{"name":"Enchant Bracer - Superior Spirit (+9 Spi)","stats":{"Spirit":9},"effect_id":1884},{"name":"Enchant Bracer - Superior Stamina (+9 Stam)","stats":{"Stamina":9},"effect_id":1886},{"name":"Enchant Bracer - Superior Strength (+9 Str)","stats":{"Strength":9},"effect_id":1885},{"name":"Enchant Bracer - Vampirism (+1% Vampirism)","stats":{},"effect_id":3011}],"Feet":[{"name":"Core Armor Kit (+5 Defense)","stats":{},"effect_id":2503},{"name":"Dragonmaw Armor Kit (+5 Spelldamage)","stats":{"Spellpower":5},"effect_id":426},{"name":"Enchant Boots - Greater Agility (+7 Agi)","stats":{"Agility":7},"effect_id":1887},{"name":"Enchant Boots - Greater Spirit (+12 Spi)","stats":{"Spirit":12},"effect_id":370},{"name":"Enchant Boots - Greater Stamina (+7 Stam)","stats":{"Stamina":7},"effect_id":929},{"name":"Enchant Boots - Lesser Spirit (+3 Spi)","stats":{"Spirit":3},"effect_id":255},{"name":"Enchant Boots - Major Intellect (+9 Int)","stats":{"Int":9},"effect_id":354},{"name":"Enchant Boots - Minor Agility (+1 Agi)","stats":{"Agility":1},"effect_id":247},{"name":"Enchant Boots - Minor Stamina (+1 Stam)","stats":{"Stamina":1},"effect_id":66},{"name":"Enchant Boots - Spirit (+5 Spi)","stats":{"Spirit":5},"effect_id":851},{"name":"Enchant Boots - Superior Stamina (+15 Stam)","stats":{"Stamina":15},"effect_id":1068},{"name":"Enchant Boots - Vampirism (+1% Vampirism)","stats":{},"effect_id":3011},{"name":"Enchanted Armor Kit (+9 Spell Power)","stats":{"Spellpower":18},"effect_id":3025},{"name":"Heavy Armor Kit (+3 Stam)","stats":{"Stamina":3},"effect_id":17},{"name":"Light Armor Kit (+1 Stam)","stats":{"Stamina":1},"effect_id":15},{"name":"Medium Armor Kit (+2 Stam)","stats":{"Stamina":2},"effect_id":16},{"name":"Rugged Armor Kit (+5 Stam)","stats":{"Stamina":5},"effect_id":1843},{"name":"Thick Armor Kit (+4 Stam)","stats":{"Stamina":4},"effect_id":18}],"Legs":[{"name":"Animist's Caress (+10 Int, +10 Stam)","stats":{"Stamina":10,"Int":10},"effect_id":2591},{"name":"Arcanum of Focus (+12 Healing)","stats":{"Spellpower":24},"effect_id":2544},{"name":"Arcanum of Protection (+1% Dodge)","stats":{},"effect_id":2545},{"name":"Arcanum of Rapidity (+1% Haste)","stats":{"Haste":0.01},"effect_id":3016},{"name":"Core Armor Kit (+5 Defense)","stats":{},"effect_id":2503},{"name":"Death's Embrace (+28 AP, +1% Dodge)","stats":{"AP":56},"effect_id":2585},{"name":"Dragonmaw Armor Kit (+5 Spelldamage)","stats":{"Spellpower":10},"effect_id":426},{"name":"Enchanted Armor Kit (+9 Spell Power)","stats":{"Spellpower":18},"effect_id":3025},{"name":"Falcon's Call (+1% Hit, +24 RAP, +10 Stam)","stats":{"Stamina":10,"Hit %":0.01},"effect_id":2586},{"name":"Gift of Ferocity","stats":{}},{"name":"Heavy Armor Kit (+3 Stam)","stats":{"Stamina":3},"effect_id":17},{"name":"Hoodoo Hex (+18 Dmgandhealing, +18 Spelldamage, +10 Stam)","stats":{"Stamina":10,"Spellpower":18},"effect_id":2589},{"name":"Ice Guard (+10 Frostresist)","stats":{},"effect_id":2682},{"name":"Invocation of Expansive Mind (+25 Spell Pen)","stats":{},"effect_id":3047},{"name":"Invocation of Greater Arcane Fortitude (+25 Arcaneresist)","stats":{},"effect_id":1267},{"name":"Invocation of Greater Protection (+2% Dodge)","stats":{},"effect_id":3049},{"name":"Invocation of Shattering (+40 Armor Pen)","stats":{"Armor Pen":40},"effect_id":3038},{"name":"Lesser Arcanum of Constitution (+100 Health)","stats":{},"effect_id":1503},{"name":"Lesser Arcanum of Resilience (+20 Fireresist)","stats":{},"effect_id":1505},{"name":"Lesser Arcanum of Rumination (+150 Mana)","stats":{},"effect_id":1483},{"name":"Lesser Arcanum of Tenacity (+125 Armor)","stats":{},"effect_id":1504},{"name":"Lesser Arcanum of Voracity (+8 Agi)","stats":{"Agility":8},"effect_id":1508},{"name":"Lesser Arcanum of Voracity (+8 Int)","stats":{"Int":8},"effect_id":1509},{"name":"Lesser Arcanum of Voracity (+8 Spi)","stats":{"Spirit":8},"effect_id":1510},{"name":"Lesser Arcanum of Voracity (+8 Stam)","stats":{"Stamina":8},"effect_id":1507},{"name":"Lesser Arcanum of Voracity (+8 Str)","stats":{"Strength":8},"effect_id":1506},{"name":"Light Armor Kit (+1 Stam)","stats":{"Stamina":1},"effect_id":15},{"name":"Medium Armor Kit (+2 Stam)","stats":{"Stamina":2},"effect_id":16},{"name":"Presence of Might (+15% Blockvalue, +7 Defense, +10 Stam)","stats":{"Stamina":10},"effect_id":2583},{"name":"Presence of Sight (+18 Dmgandhealing, +1% Hit, +1% Spell Hit)","stats":{"Spellpower":18,"Hit %":0.01},"effect_id":2588},{"name":"Prophetic Aura (+4 Mana, +4 MP5, +10 Stam)","stats":{"Stamina":10,"MP5":4},"effect_id":2590},{"name":"Rugged Armor Kit (+5 Stam)","stats":{"Stamina":5},"effect_id":1843},{"name":"Savage Guard (+10 Natureresist)","stats":{},"effect_id":2681},{"name":"Shadow Guard (+10 Shadowresist)","stats":{},"effect_id":2683},{"name":"Syncretist's Sigil (+7 Defense, +10 Stam)","stats":{"Stamina":10},"effect_id":2584},{"name":"Thick Armor Kit (+4 Stam)","stats":{"Stamina":4},"effect_id":18},{"name":"Vodouisant's Vigilant Embrace (+15 Int, +13 Spelldamage)","stats":{"Int":15,"Spellpower":13},"effect_id":2587}],"Hands":[{"name":"Core Armor Kit (+5 Defense)","stats":{},"effect_id":2503},{"name":"Dragonmaw Armor Kit (+5 Spelldamage)","stats":{"Spellpower":5},"effect_id":426},{"name":"Enchant Gloves - Advanced Herbalism","stats":{},"effect_id":909},{"name":"Enchant Gloves - Advanced Mining","stats":{},"effect_id":906},{"name":"Enchant Gloves - Arcane Power (+20 Arcane Dmg)","stats":{},"effect_id":3001},{"name":"Enchant Gloves - Fire Power (+20 Fire Dmg)","stats":{"Fire Spellpower":20},"effect_id":2616},{"name":"Enchant Gloves - Fishing","stats":{},"effect_id":846},{"name":"Enchant Gloves - Frost Power (+20 Frost Dmg)","stats":{},"effect_id":2615},{"name":"Enchant Gloves - Greater Agility (+7 Agi)","stats":{"Agility":7},"effect_id":1887},{"name":"Enchant Gloves - Greater Strength (+7 Str)","stats":{"Strength":7},"effect_id":927},{"name":"Enchant Gloves - Minor Haste (+1% Haste)","stats":{"Haste":0.01},"effect_id":931},{"name":"Enchant Gloves - Healing Power (+30 Healing)","stats":{"Spellpower":30},"effect_id":2617},{"name":"Enchant Gloves - Herbalism","stats":{},"effect_id":845},{"name":"Enchant Gloves - Holy Power (+20 Holy Dmg)","stats":{},"effect_id":3003},{"name":"Enchant Gloves - Major Strength (+9 Str)","stats":{"Strength":9},"effect_id":357},{"name":"Enchant Gloves - Mining","stats":{},"effect_id":844},{"name":"Enchant Gloves - Nature Power (+20 Nature Dmg)","stats":{"Nature Spellpower":20},"effect_id":3002},{"name":"Enchant Gloves - Riding Skill","stats":{},"effect_id":930},{"name":"Enchant Gloves - Shadow Power (+20 Shadow Dmg)","stats":{},"effect_id":2614},{"name":"Enchant Gloves - Skinning","stats":{},"effect_id":865},{"name":"Enchant Gloves - Superior Agility (+15 Agi)","stats":{"Agility":15},"effect_id":2564},{"name":"Enchant Gloves - Threat","stats":{},"effect_id":2613},{"name":"Enchanted Armor Kit (+9 Spell Power)","stats":{"Spellpower":18},"effect_id":3025},{"name":"Heavy Armor Kit (+3 Stam)","stats":{"Stamina":3},"effect_id":17},{"name":"Light Armor Kit (+1 Stam)","stats":{"Stamina":1},"effect_id":15},{"name":"Medium Armor Kit (+2 Stam)","stats":{"Stamina":2},"effect_id":16},{"name":"Rugged Armor Kit (+5 Stam)","stats":{"Stamina":5},"effect_id":1843},{"name":"Thick Armor Kit (+4 Stam)","stats":{"Stamina":4},"effect_id":18}],"Chest":[{"name":"Core Armor Kit (+5 Defense)","stats":{},"effect_id":2503},{"name":"Dragonmaw Armor Kit (+5 Spelldamage)","stats":{"Spellpower":5},"effect_id":426},{"name":"Enchant Chest - Minor Stats (+1 All Stats)","stats":{"Strength":1,"Agility":1,"Stamina":1,"Int":1,"Spirit":1},"effect_id":847},{"name":"Enchant Chest - Lesser Stats (+2 All Stats)","stats":{"Strength":2,"Agility":2,"Stamina":2,"Int":2,"Spirit":2},"effect_id":866},{"name":"Enchant Chest - Stats (+3 All Stats)","stats":{"Strength":3,"Agility":3,"Stamina":3,"Int":3,"Spirit":3},"effect_id":928},{"name":"Enchant Chest - Greater Stats (+4 All Stats)","stats":{"Strength":4,"Agility":4,"Stamina":4,"Int":4,"Spirit":4},"effect_id":1891},{"name":"Enchant Chest - Lesser Mana (+20 Mana)","stats":{},"effect_id":246},{"name":"Enchant Chest - Major Health (+100 Health)","stats":{},"effect_id":1892},{"name":"Enchant Chest - Major Mana (+100 Mana)","stats":{},"effect_id":1893},{"name":"Enchant Chest - Mighty Mana","stats":{},"effect_id":1483},{"name":"Enchant Chest - Minor Mana (+5 Mana)","stats":{},"effect_id":24},{"name":"Enchanted Armor Kit (+9 Spell Power)","stats":{"Spellpower":18},"effect_id":3025},{"name":"Heavy Armor Kit (+3 Stam)","stats":{"Stamina":3},"effect_id":17},{"name":"Light Armor Kit (+1 Stam)","stats":{"Stamina":1},"effect_id":15},{"name":"Medium Armor Kit (+2 Stam)","stats":{"Stamina":2},"effect_id":16},{"name":"Rugged Armor Kit (+5 Stam)","stats":{"Stamina":5},"effect_id":1843},{"name":"Thick Armor Kit (+4 Stam)","stats":{"Stamina":4},"effect_id":18}],"Waist":[{"name":"Arcanite Belt Buckle (+5 Defense)","stats":{},"effect_id":1944},{"name":"Bloody Belt Buckle","stats":{},"effect_id":3054},{"name":"Bronze Belt Buckle (+2 Stam)","stats":{"Stamina":2},"effect_id":72},{"name":"Copper Belt Buckle (+1 Stam)","stats":{"Stamina":1},"effect_id":71},{"name":"Dark Iron Belt Buckle (+10 Fireresist)","stats":{},"effect_id":1344},{"name":"Dragonscale Belt Buckle (+9 Fire Dmg)","stats":{"Fire Spellpower":9},"effect_id":2160},{"name":"Dreamsteel Belt Buckle (+10 Int)","stats":{"Int":10},"effect_id":3052},{"name":"Enchanted Thorium Belt Buckle (+10 Arcaneresist)","stats":{},"effect_id":1252},{"name":"Gold Belt Buckle (+14 AP)","stats":{"AP":28},"effect_id":2045},{"name":"Iron Belt Buckle (+25 Armor Pen)","stats":{"Armor Pen":25},"effect_id":3051},{"name":"Mithril Belt Buckle (+6 Agi)","stats":{"Agility":6},"effect_id":92},{"name":"Obsidian Belt Buckle (+10 Str)","stats":{"Strength":10},"effect_id":362},{"name":"Steel Belt Buckle (+10% Blockvalue)","stats":{},"effect_id":2722},{"name":"Thorium Belt Buckle (+4 All Res)","stats":{},"effect_id":28},{"name":"Truesilver Belt Buckle (+8 Healing)","stats":{"Spellpower":8}}],"Back":[{"name":"Enchant Cloak - Dodge (+1% Dodge)","stats":{},"effect_id":2622},{"name":"Enchant Cloak - Greater Arcane Resistance (+15 Arcane Resist)","stats":{},"effect_id":1257},{"name":"Enchant Cloak - Greater Fire Resistance (+15 Fire Resist)","stats":{},"effect_id":2619},{"name":"Enchant Cloak - Greater Nature Resistance (+15 Natureresist)","stats":{},"effect_id":2620},{"name":"Enchant Cloak - Greater Resistance (+5 All Res)","stats":{},"effect_id":1888},{"name":"Enchant Cloak - Lesser Agility (+3 Agi)","stats":{"Agility":3},"effect_id":849},{"name":"Enchant Cloak - Lesser Shadow Resistance (+10 Shadowresist)","stats":{},"effect_id":804},{"name":"Enchant Cloak - Minor Agility (+1 Agi)","stats":{"Agility":1},"effect_id":247},{"name":"Enchant Cloak - Stealth","stats":{},"effect_id":910},{"name":"Enchant Cloak - Subtlety","stats":{},"effect_id":2621},{"name":"Enchant Cloak - Superior Defense (+70 Armor)","stats":{},"effect_id":1889},{"name":"Imbue Cloak - Protection (+10 Armor)","stats":{}}],"Off Hand":[{"name":"Enchant 2H Weapon - Agility (+25 Agi)","stats":{"Agility":25},"effect_id":2646},{"name":"Enchant 2H Weapon - Lesser Intellect (+3 Int)","stats":{"Int":3},"effect_id":723},{"name":"Enchant 2H Weapon - Lesser Spirit (+3 Spi)","stats":{"Spirit":3},"effect_id":255},{"name":"Enchant 2H Weapon - Major Intellect (+9 Int)","stats":{"Int":9},"effect_id":1904},{"name":"Enchant 2H Weapon - Major Spirit (+9 Spi)","stats":{"Spirit":9},"effect_id":1903},{"name":"Enchant 2H Weapon - Minor Intellect (+2 Int)","stats":{"Int":2},"effect_id":80},{"name":"Enchant 2H Weapon - Superior Impact (+9 Dmg)","stats":{"Weapon Skill":9},"effect_id":1896},{"name":"Enchant Shield - Frost Resistance (+8 Frostresist)","stats":{},"effect_id":926},{"name":"Enchant Shield - Greater Stamina (+7 Stam)","stats":{"Stamina":7},"effect_id":929},{"name":"Enchant Shield - Lesser Block (+2% Block)","stats":{},"effect_id":863},{"name":"Enchant Shield - Lesser Protection (+30 Armor)","stats":{},"effect_id":848},{"name":"Enchant Shield - Stamina (+5 Stam)","stats":{"Stamina":5},"effect_id":852},{"name":"Enchant Shield - Superior Spirit (+9 Spi)","stats":{"Spirit":9},"effect_id":1890},{"name":"Enchant Weapon - Agility (+15 Agi)","stats":{"Agility":15},"effect_id":2564},{"name":"Enchant Weapon - Crusader","stats":{},"effect_id":1900},{"name":"Enchant Weapon - Demonslaying","stats":{},"effect_id":912},{"name":"Enchant Weapon - Fiery Weapon","stats":{},"effect_id":803},{"name":"Enchant Weapon - Healing Power","stats":{},"effect_id":2505},{"name":"Enchant Weapon - Icy Chill","stats":{},"effect_id":1894},{"name":"Enchant Weapon - Lesser Beastslayer (+6 Dmg)","stats":{"Weapon Skill":6},"effect_id":853},{"name":"Enchant Weapon - Lesser Elemental Slayer (+6 Dmg)","stats":{"Weapon Skill":6},"effect_id":854},{"name":"Enchant Weapon - Lifestealing","stats":{},"effect_id":1898},{"name":"Enchant Weapon - Mighty Intellect (+22 Int)","stats":{"Int":22},"effect_id":2568},{"name":"Enchant Weapon - Mighty Spirit (+20 Spi)","stats":{"Spirit":20},"effect_id":2567},{"name":"Enchant Weapon - Minor Beastslayer","stats":{},"effect_id":249},{"name":"Enchant Weapon - Spell Power (+30)","stats":{"Spellpower":60},"effect_id":2504},{"name":"Enchant Weapon - Strength (+15 Str)","stats":{"Strength":15},"effect_id":2563},{"name":"Enchant Weapon - Superior Striking (+5 Dmg)","stats":{"Weapon Skill":5},"effect_id":1897},{"name":"Enchant Weapon - Unholy","stats":{},"effect_id":1899},{"name":"Enchant Weapon - Winter's Might","stats":{}},{"name":"Presence of Might (+15% Blockvalue, +7 Defense, +10 Stam)","stats":{"Stamina":10},"effect_id":2583}],"Main Hand":[{"name":"Enchant 2H Weapon - Agility (+25 Agi)","stats":{"Agility":25},"effect_id":2646},{"name":"Enchant 2H Weapon - Lesser Intellect (+3 Int)","stats":{"Int":3},"effect_id":723},{"name":"Enchant 2H Weapon - Lesser Spirit (+3 Spi)","stats":{"Spirit":3},"effect_id":255},{"name":"Enchant 2H Weapon - Major Intellect (+9 Int)","stats":{"Int":9},"effect_id":1904},{"name":"Enchant 2H Weapon - Major Spirit (+9 Spi)","stats":{"Spirit":9},"effect_id":1903},{"name":"Enchant 2H Weapon - Minor Intellect (+2 Int)","stats":{"Int":2},"effect_id":80},{"name":"Enchant 2H Weapon - Superior Impact (+9 Dmg)","stats":{"Weapon Skill":9},"effect_id":1896},{"name":"Iron Counterweight (+3% Haste)","stats":{"Haste":0.03}},{"name":"Enchant Weapon - Agility (+15 Agi)","stats":{"Agility":15},"effect_id":2564},{"name":"Enchant Weapon - Crusader","stats":{},"effect_id":1900},{"name":"Enchant Weapon - Demonslaying","stats":{},"effect_id":912},{"name":"Enchant Weapon - Fiery Weapon","stats":{},"effect_id":803},{"name":"Enchant Weapon - Healing Power","stats":{},"effect_id":2505},{"name":"Enchant Weapon - Icy Chill","stats":{},"effect_id":1894},{"name":"Enchant Weapon - Lesser Beastslayer (+6 Dmg)","stats":{"Weapon Skill":6},"effect_id":853},{"name":"Enchant Weapon - Lesser Elemental Slayer (+6 Dmg)","stats":{"Weapon Skill":6},"effect_id":854},{"name":"Enchant Weapon - Lifestealing","stats":{},"effect_id":1898},{"name":"Enchant Weapon - Mighty Intellect (+22 Int)","stats":{"Int":22},"effect_id":2568},{"name":"Enchant Weapon - Mighty Spirit (+20 Spi)","stats":{"Spirit":20},"effect_id":2567},{"name":"Enchant Weapon - Minor Beastslayer","stats":{},"effect_id":249},{"name":"Enchant Weapon - Spell Power (+30 Spell Power)","stats":{"Spellpower":30},"effect_id":2504},{"name":"Enchant Weapon - Strength (+15 Str)","stats":{"Strength":15},"effect_id":2563},{"name":"Enchant Weapon - Superior Striking (+5 Dmg)","stats":{"Weapon Skill":5},"effect_id":1897},{"name":"Enchant Weapon - Unholy","stats":{},"effect_id":1899},{"name":"Enchant Weapon - Winter's Might","stats":{}}],"Head":[{"name":"Animist's Caress (+10 Int, +10 Stam)","stats":{"Stamina":10,"Int":10},"effect_id":2591},{"name":"Arcanum of Focus (+12 Healing)","stats":{"Spellpower":24},"effect_id":2544},{"name":"Arcanum of Protection (+1% Dodge)","stats":{},"effect_id":2545},{"name":"Gift of Ferocity (Druid)","stats":{},"effect_id":3004},{"name":"Arcanum of Rapidity (+1% Haste)","stats":{"Haste":0.01},"effect_id":3016},{"name":"Death's Embrace (+28 AP, +1% Dodge)","stats":{"AP":56},"effect_id":2585},{"name":"Falcon's Call (+1% Hit, +24 RAP, +10 Stam)","stats":{"Stamina":10,"Hit %":0.01},"effect_id":2586},{"name":"Gift of Ferocity","stats":{}},{"name":"Hoodoo Hex (+18 Dmgandhealing, +18 Spelldamage, +10 Stam)","stats":{"Stamina":10,"Spellpower":18},"effect_id":2589},{"name":"Ice Guard (+10 Frostresist)","stats":{},"effect_id":2682},{"name":"Invocation of Expansive Mind (+25 Spell Pen)","stats":{},"effect_id":3047},{"name":"Invocation of Greater Arcane Fortitude (+25 Arcane Resist)","stats":{},"effect_id":1267},{"name":"Invocation of Greater Constitution (+12 Stam)","stats":{"Stamina":12},"effect_id":371},{"name":"Invocation of Greater Protection (+2% Dodge)","stats":{},"effect_id":3049},{"name":"Invocation of Greater Voracity (+10 Str)","stats":{"Strength":10},"effect_id":362},{"name":"Invocation of Shadow Resistance (+20 Shadowresist)","stats":{},"effect_id":1446},{"name":"Invocation of Shattering (+40 Armor Pen)","stats":{"Armor Pen":40},"effect_id":3038},{"name":"Lesser Arcanum of Constitution (+100 Health)","stats":{},"effect_id":1503},{"name":"Lesser Arcanum of Resilience (+20 Fireresist)","stats":{},"effect_id":1505},{"name":"Lesser Arcanum of Rumination (+150 Mana)","stats":{},"effect_id":1483},{"name":"Lesser Arcanum of Tenacity (+125 Armor)","stats":{},"effect_id":1504},{"name":"Lesser Arcanum of Voracity (+8 Agi)","stats":{"Agility":8},"effect_id":1508},{"name":"Lesser Arcanum of Voracity (+8 Int)","stats":{"Int":8},"effect_id":1509},{"name":"Lesser Arcanum of Voracity (+8 Spi)","stats":{"Spirit":8},"effect_id":1510},{"name":"Lesser Arcanum of Voracity (+8 Stam)","stats":{"Stamina":8},"effect_id":1507},{"name":"Lesser Arcanum of Voracity (+8 Str)","stats":{"Strength":8},"effect_id":1506},{"name":"Presence of Might (+15% Blockvalue, +7 Defense, +10 Stam)","stats":{"Stamina":10},"effect_id":2583},{"name":"Presence of Sight (+18 Dmgandhealing, +1% Hit, +1% Spell Hit)","stats":{"Spellpower":18,"Hit %":0.01},"effect_id":2588},{"name":"Prophetic Aura (+4 Mana, +4 MP5, +10 Stam)","stats":{"Stamina":10,"MP5":4},"effect_id":2590},{"name":"Savage Guard (+10 Natureresist)","stats":{},"effect_id":2681},{"name":"Shadow Guard (+10 Shadowresist)","stats":{},"effect_id":2683},{"name":"Syncretist's Sigil (+7 Defense, +10 Stam)","stats":{"Stamina":10},"effect_id":2584},{"name":"Vodouisant's Vigilant Embrace (+15 Int, +13 Spelldamage)","stats":{"Int":15,"Spellpower":13},"effect_id":2587}],"Shoulders":[{"name":"Arcane Mantle of the Dawn (+5 Arcaneresist)","stats":{},"effect_id":2485},{"name":"Chromatic Mantle of the Dawn","stats":{},"effect_id":2488},{"name":"Flame Mantle of the Dawn (+5 Fireresist)","stats":{},"effect_id":2483},{"name":"Fortitude of the Scourge (+100 Armor, +16 Stam)","stats":{"Stamina":16},"effect_id":2716},{"name":"Frost Mantle of the Dawn (+5 Frostresist)","stats":{},"effect_id":2484},{"name":"Might of the Scourge (+26 AP and +1% Crit)","stats":{"AP":26,"Crit %":0.01},"effect_id":2717},{"name":"Nature Mantle of the Dawn (+5 Natureresist)","stats":{},"effect_id":2486},{"name":"Power of the Scourge (+15 Spell Dmg, +1% Spell Crit)","stats":{"Spellpower":15},"effect_id":2721},{"name":"Resilience of the Scourge (+5 Mana, +5 MP5)","stats":{"MP5":5,"Spellpower":5},"effect_id":2715},{"name":"Shadow Mantle of the Dawn (+5 Shadowresist)","stats":{},"effect_id":2487},{"name":"Sigil of Leeching","stats":{},"effect_id":3012},{"name":"Invocation of Shattering (+40 Armor Pen)","stats":{"Armor Pen":40},"effect_id":3038},{"name":"Sigil of Quickness (+2% Haste)","stats":{"Haste":0.02},"effect_id":3017},{"name":"Sigil of Resilience","stats":{},"effect_id":3054},{"name":"Zandalar Signet of Might (+30 AP)","stats":{"AP":60},"effect_id":2606},{"name":"Zandalar Signet of Mojo","stats":{"Spellpower":18},"effect_id":2605},{"name":"Zandalar Signet of Serenity","stats":{},"effect_id":2604},{"name":"Zandalar Signet of Tenacity (+14 Stam)","stats":{"Stamina":14},"effect_id":3005}],"Ring 2":[{"name":"Ancient Dwarven (+3 Spelldamage)","stats":{"Spellpower":3},"effect_id":3021},{"name":"Arcane Emerald (+5 Spell Dmg)","stats":{"Spellpower":5},"effect_id":426},{"name":"Azerothian Ruby (+6 Str)","stats":{"Strength":6},"effect_id":108},{"name":"Beautiful Diamond (+12 Healing)","stats":{"Spellpower":12},"effect_id":440},{"name":"Brilliant Opal (+6 Agi)","stats":{"Agility":6},"effect_id":92},{"name":"Burning Star (+5 Str)","stats":{"Strength":5},"effect_id":107},{"name":"Dreary Opal (+8 Shadowresist)","stats":{},"effect_id":1434},{"name":"Elegant Emerald (+8 Natureresist)","stats":{},"effect_id":1388},{"name":"Enchanted Emerald (+9 Nature Dmg)","stats":{"Nature Spellpower":9},"effect_id":225},{"name":"Flawless Black (+3 All Res)","stats":{},"effect_id":903},{"name":"Gleaming Jade (+7 Healing)","stats":{"Spellpower":7},"effect_id":208},{"name":"Glittering Sapphire (+9 Frost Dmg)","stats":{},"effect_id":2236},{"name":"Gloomy Diamond (+8 Fireresist)","stats":{},"effect_id":1342},{"name":"Glowing Ruby (+1% Vampirism)","stats":{},"effect_id":3011},{"name":"Gorgeous Mountain (+1% Block)","stats":{},"effect_id":763},{"name":"Graceful Agate (+6 Spell Pen)","stats":{},"effect_id":3008},{"name":"Illuminated (+4 Spi)","stats":{"Spirit":4},"effect_id":98},{"name":"Invocation of Shattering (+40 Armor Pen)","stats":{"Armor Pen":40},"effect_id":3038},{"name":"Pristine Crystal (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pristine Quartz (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pure Shining Moonstone (+6 Arcane Dmg)","stats":{},"effect_id":2082},{"name":"Radiant Ember (+6 Fire Dmg)","stats":{"Fire Spellpower":6},"effect_id":2158},{"name":"Resilient Arcane (+40 Armor)","stats":{}},{"name":"Resurged Topaz (+2 MP5)","stats":{"MP5":2},"effect_id":2366},{"name":"Sharpened Citrine (+4 Agi)","stats":{"Agility":4}},{"name":"Shimmering Aqua (+4 Int)","stats":{"Int":4},"effect_id":94},{"name":"Shining Sapphire (+6 Int)","stats":{"Int":6},"effect_id":96},{"name":"Stunning Imperial (+3 All Stats)","stats":{"Strength":3,"Agility":3,"Stamina":3,"Int":3,"Spirit":3},"effect_id":928},{"name":"Tempered Azerothian (+6 Stam)","stats":{"Stamina":6},"effect_id":104},{"name":"Unstable Arcane (+8 Arcaneresist)","stats":{},"effect_id":1250}],"Ring 1":[{"name":"Ancient Dwarven (+3 Spelldamage)","stats":{"Spellpower":3},"effect_id":3021},{"name":"Arcane Emerald (+5 Spell Dmg)","stats":{"Spellpower":5},"effect_id":426},{"name":"Azerothian Ruby (+6 Str)","stats":{"Strength":6},"effect_id":108},{"name":"Beautiful Diamond (+12 Healing)","stats":{"Spellpower":12},"effect_id":440},{"name":"Brilliant Opal (+6 Agi)","stats":{"Agility":6},"effect_id":92},{"name":"Burning Star (+5 Str)","stats":{"Strength":5},"effect_id":107},{"name":"Dreary Opal (+8 Shadowresist)","stats":{},"effect_id":1434},{"name":"Elegant Emerald (+8 Natureresist)","stats":{},"effect_id":1388},{"name":"Enchanted Emerald (+9 Nature Dmg)","stats":{"Nature Spellpower":9},"effect_id":225},{"name":"Flawless Black (+3 All Res)","stats":{},"effect_id":903},{"name":"Gleaming Jade (+7 Healing)","stats":{"Spellpower":7},"effect_id":208},{"name":"Glittering Sapphire (+9 Frost Dmg)","stats":{},"effect_id":2236},{"name":"Gloomy Diamond (+8 Fireresist)","stats":{},"effect_id":1342},{"name":"Glowing Ruby (+1% Vampirism)","stats":{},"effect_id":3011},{"name":"Gorgeous Mountain (+1% Block)","stats":{},"effect_id":763},{"name":"Graceful Agate (+6 Spell Pen)","stats":{},"effect_id":3008},{"name":"Illuminated (+4 Spi)","stats":{"Spirit":4},"effect_id":98},{"name":"Invocation of Shattering (+40 Armor Pen)","stats":{"Armor Pen":40},"effect_id":3038},{"name":"Pristine Crystal (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pristine Quartz (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pure Shining Moonstone (+6 Arcane Dmg)","stats":{},"effect_id":2082},{"name":"Radiant Ember (+6 Fire Dmg)","stats":{"Fire Spellpower":6},"effect_id":2158},{"name":"Resilient Arcane (+40 Armor)","stats":{}},{"name":"Resurged Topaz (+2 MP5)","stats":{"MP5":2},"effect_id":2366},{"name":"Sharpened Citrine (+4 Agi)","stats":{"Agility":4}},{"name":"Shimmering Aqua (+4 Int)","stats":{"Int":4},"effect_id":94},{"name":"Shining Sapphire (+6 Int)","stats":{"Int":6},"effect_id":96},{"name":"Stunning Imperial (+3 All Stats)","stats":{"Strength":3,"Agility":3,"Stamina":3,"Int":3,"Spirit":3},"effect_id":928},{"name":"Tempered Azerothian (+6 Stam)","stats":{"Stamina":6},"effect_id":104},{"name":"Unstable Arcane (+8 Arcaneresist)","stats":{},"effect_id":1250}],"Neck":[{"name":"Ancient Dwarven (+3 Spelldamage)","stats":{"Spellpower":3},"effect_id":3021},{"name":"Arcane Emerald (+5 Spell Dmg)","stats":{"Spellpower":5},"effect_id":426},{"name":"Azerothian Ruby (+6 Str)","stats":{"Strength":6},"effect_id":108},{"name":"Beautiful Diamond (+12 Healing)","stats":{"Spellpower":12},"effect_id":440},{"name":"Brilliant Opal (+6 Agi)","stats":{"Agility":6},"effect_id":92},{"name":"Burning Star (+5 Str)","stats":{"Strength":5},"effect_id":107},{"name":"Dreary Opal (+8 Shadowresist)","stats":{},"effect_id":1434},{"name":"Elegant Emerald (+8 Natureresist)","stats":{},"effect_id":1388},{"name":"Enchanted Emerald (+9 Nature Dmg)","stats":{"Nature Spellpower":9},"effect_id":225},{"name":"Flawless Black (+3 All Res)","stats":{},"effect_id":903},{"name":"Gleaming Jade (+7 Healing)","stats":{"Spellpower":7},"effect_id":208},{"name":"Glittering Sapphire (+9 Frost Dmg)","stats":{},"effect_id":2236},{"name":"Gloomy Diamond (+8 Fireresist)","stats":{},"effect_id":1342},{"name":"Glowing Ruby (+1% Vampirism)","stats":{},"effect_id":3011},{"name":"Gorgeous Mountain (+1% Block)","stats":{},"effect_id":763},{"name":"Graceful Agate (+6 Spell Pen)","stats":{},"effect_id":3008},{"name":"Illuminated (+4 Spi)","stats":{"Spirit":4},"effect_id":98},{"name":"Pristine Crystal (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pristine Quartz (+3 Stam)","stats":{"Stamina":3},"effect_id":73},{"name":"Pure Shining Moonstone (+6 Arcane Dmg)","stats":{},"effect_id":2082},{"name":"Radiant Ember (+6 Fire Dmg)","stats":{"Fire Spellpower":6},"effect_id":2158},{"name":"Resilient Arcane (+40 Armor)","stats":{}},{"name":"Resurged Topaz (+2 MP5)","stats":{"MP5":2},"effect_id":2366},{"name":"Sharpened Citrine (+4 Agi)","stats":{"Agility":4}},{"name":"Shimmering Aqua (+4 Int)","stats":{"Int":4},"effect_id":94},{"name":"Shining Sapphire (+6 Int)","stats":{"Int":6},"effect_id":96},{"name":"Stunning Imperial (+3 All Stats)","stats":{"Strength":3,"Agility":3,"Stamina":3,"Int":3,"Spirit":3},"effect_id":928},{"name":"Tempered Azerothian (+6 Stam)","stats":{"Stamina":6},"effect_id":104},{"name":"Unstable Arcane (+8 Arcaneresist)","stats":{},"effect_id":1250}],"Ranged":[{"name":"Crude Scope (+1 Dmg)","stats":{},"effect_id":30},{"name":"Standard Scope (+2 Dmg)","stats":{},"effect_id":32},{"name":"Accurate Scope (+3 Dmg)","stats":{},"effect_id":33},{"name":"Deadly Scope (+5 Dmg)","stats":{},"effect_id":663},{"name":"Sniper Scope (+7 Dmg)","stats":{},"effect_id":664},{"name":"Biznicks 247x128 Accurascope (+3% Hit)","stats":{"Hit %":0.03},"effect_id":2523}]};
+let ENCHANT_DB = {};  // loaded from data/enchants.json
 
 let WEAPON_DB = [];
 
@@ -2156,42 +2156,21 @@ let WEAPON_DB = [];
 // effectId is the number in &quot;enchantments&quot;:N in the armory page JSON
 // Slot-aware: same effectId can mean different enchants per slot
 // ============================================================
-const ENCHANT_EFFECT_MAP = {
-  // HEAD / LEGS — Lesser Arcanum
-  1506: { 'Head': '(+8 Strength) Lesser Arcanum of Voracity', 'Legs': '(+8 Strength) Lesser Arcanum of Voracity' },
-  1508: { 'Head': '(+8 Agility) Lesser Arcanum of Voracity',  'Legs': '(+8 Agility) Lesser Arcanum of Voracity'  },
-  // SHOULDERS
-  2717: { 'Shoulders': 'Might of the Scourge (+26 AP, 1% Crit)' },
-  2606: { 'Shoulders': 'ZG AP - Zandalar Signet of Might' },
-  3017: { 'Shoulders': '(2% Haste) Sigil of Quickness' },
-  3038: { 'Shoulders': '(40 ArP) Sigil of Penetration' },
-  // CHEST
-  1891: { 'Chest': '(+4 All Stats) Enchant Chest - Greater Stats' },
-  // effectId 928 is reused for Chest stats AND ring/neck gemstones
-  928:  { 'Chest': '(+3 All Stats) Enchant Chest - Stats',
-          'Ring 1': '(+3 All Stats) Stunning Imperial Gemstone',
-          'Ring 2': '(+3 All Stats) Stunning Imperial Gemstone',
-          'Neck':   '(+3 All Stats) Stunning Imperial Gemstone' },
-  // WRIST
-  1885: { 'Wrist': '(+9 Strength) Enchant Bracer - Superior Strength' },
-  927:  { 'Wrist': '(+7 Strength) Enchant Bracer - Greater Strength' },
-  1887: { 'Wrist': '(+7 Agility) Enchant Bracer - Greater Agility',
-          'Feet':  '(+7 Agility) Enchant Boots - Greater Agility' },
-  // HANDS
-  2564: { 'Hands': '(+15 Agility) Enchant Gloves - Superior Agility' },
-  357:  { 'Hands': '(+9 Str) Enchant Gloves - Major Strength' },
-  931:  { 'Hands': '(1% Haste) Minor Haste' },
-  // WAIST
-  3051: { 'Waist': '(+10 Strength) Obsidian Belt Buckle' },
-  // FEET
-  904:  { 'Feet': '(+7 Agility) Enchant Boots - Greater Agility' },
-  // RINGS — gemstones
-  108:  { 'Ring 1': '(+6 Strength) Azerothian Ruby Gemstone', 'Ring 2': '(+6 Strength) Azerothian Ruby Gemstone' },
-  92:   { 'Ring 1': '(+6 Agility) Brilliant Opal Gemstone',   'Ring 2': '(+6 Agility) Brilliant Opal Gemstone'   },
-  // MAIN HAND
-  2646: { 'Main Hand': '(+25 Agility) Enchant 2H Weapon - Agility' },
-  2563: { 'Main Hand': '(+15 Strength) Enchant Weapon - Strength' },
-};
+// Runtime enchant lookup by effect_id — mirrors ichasarmory.quest's enchantEffectIds.js
+// Scans ENCHANT_DB directly so it's always in sync with whatever enchants are loaded
+function findEnchantByEffectId(slot, effectId) {
+  if (!effectId) return null;
+  var enchants = ENCHANT_DB[slot] || [];
+  // Direct effect_id match on the correct slot
+  var found = enchants.find(e => e.effect_id === effectId || e.effect_id === String(effectId));
+  if (found) return found.name;
+  // Fallback: search all slots (some enchants appear on multiple slots)
+  for (var s of Object.keys(ENCHANT_DB)) {
+    var e = ENCHANT_DB[s].find(e => e.effect_id === effectId || e.effect_id === String(effectId));
+    if (e) return e.name;
+  }
+  return null;
+}
 // ============================================================
 // ============================================================
 // LIVE ITEM STAT FETCHING from database.turtlecraft.gg
@@ -2511,144 +2490,14 @@ function extractItemsFromHtml(doc, htmlText) {
 
 // Complete armory ID map — built from database.turtlecraft.gg + 5 live armory scans
 // database confirmed: 47136=Crown, 47137=Pauldrons10Storms, 47125=EFGirdle
-var ARMORY_ITEM_ID_MAP = {
-  11726:["Hands","Flameguard Gauntlets"],
-  11815:["Trinket 1","Hand of Justice"],
-  12587:["Head","Eye of Rend"],
-  13262:["Main Hand","Arcanite Reaper"],
-  13965:["Trinket 1","Blackhand's Breadth"],
-  15058:["Shoulders","Stormshroud Shoulders"],
-  15062:["Legs","Devilsaur Leggings"],
-  15411:["Neck","Mark of Fordring"],
-  16833:["Feet","Earthfury Sabatons"],
-  16834:["Legs","Earthfury Leggings"],
-  16835:["Waist","Earthfury Girdle"],
-  16836:["Hands","Earthfury Fists"],
-  16837:["Wrist","Earthfury Bracelets"],
-  16838:["Chest","Earthfury Breastplate"],
-  16840:["Head","Earthfury Crown"],
-  17063:["Ring 1","Band of Accuria"],
-  17065:["Neck","Medallion of Steadfast Might"],
-  17102:["Back","Cloak of the Shrouded Mists"],
-  17104:["Ranged","Totem of Rage"],
-  17110:["Ring 1","Seal of the Archmagus"],
-  17182:["Main Hand","Sulfuras, Hand of Ragnaros"],
-  17713:["Ring 1","Blackstone Ring"],
-  17782:["Neck","Talisman of Binding Shard"],
-  18404:["Neck","Onyxia Tooth Pendant"],
-  18500:["Ring 1","Tarnished Elven Ring"],
-  18541:["Main Hand","Dark Edge of Insanity"],
-  18805:["Main Hand","Core Hound Tooth"],
-  18812:["Wrist","Wristguards of True Flight"],
-  18817:["Head","Crown of Destruction"],
-  18821:["Ring 1","Quick Strike Ring"],
-  19143:["Legs","Earthfury Leggings"],
-  19144:["Hands","Earthfury Fists"],
-  19146:["Wrist","Wristguards of Stability"],
-  19169:["Legs","Legguards of the Chromatic Defier"],
-  19325:["Waist","Cloverlink Belt"],
-  19334:["Main Hand","Dreadforge Retaliator"],
-  19335:["Main Hand","Spineshatter"],
-  19365:["Main Hand","Claw of the Black Drake"],
-  19384:["Ring 1","Master Dragonslayer's Ring"],
-  19432:["Ring 1","Circle of Applied Force"],
-  19436:["Back","Cloak of Draconic Might"],
-  19856:["Neck","The Eye of Hakkar"],
-  19896:["Main Hand","Drake Talon Cleaver"],
-  21180:["Main Hand","Neretzek"],
-  21197:["Ring 1","Signet Ring of the Bronze Dragonflight (DPS)"],
-  21572:["Main Hand","The Unstoppable Force"],
-  21602:["Wrist","Qiraji Execution Bracers"],
-  21664:["Neck","Barbed Choker"],
-  21665:["Shoulders","Mantle of Wicked Revenge"],
-  21677:["Ring 1","Ring of the Qiraji Fury"],
-  21710:["Back","Cloak of the Fallen God"],
-  22340:["Neck","Pendant of Celerity"],
-  22684:["Chest","Savage Gladiator Chain"],
-  22721:["Ring 1","Band of Servitude"],
-  22722:["Ring 1","Seal of the Gurubashi Berserker"],
-  22798:["Main Hand","Might of Menethil"],
-  22954:["Trinket 1","Kiss of the Spider"],
-  23038:["Ring 1","Band of Unnatural Forces"],
-  23041:["Trinket 1","Slayer's Crest"],
-  23045:["Back","Shroud of Dominion"],
-  23053:["Neck","Stormrage's Talisman of Seething"],
-  23073:["Feet","Boots of Displacement"],
-  23076:["Legs","Leggings of Ten Storms"],
-  23206:["Trinket 1","Mark of the Champion"],
-  33089:["Main Hand","Spinal Reaper"],
-  33155:["Off Hand","Scaleshield"],
-  41076:["Main Hand","Aspect of Seradane"],
-  47121:["Shoulders","Earthfury Pauldrons"],
-  47122:["Chest","Earthfury Breastplate"],
-  47123:["Hands","Flameguard Gauntlets"],
-  47124:["Neck","Talisman of Binding Shard"],
-  47125:["Waist","Earthfury Girdle"],
-  47126:["Wrist","Earthfury Bracelets"],
-  47127:["Chest","Savage Gladiator Chain"],
-  47136:["Head","Crown of Ten Storms"],
-  47137:["Shoulders","Pauldrons of Ten Storms"],
-  47138:["Chest","Breastplate of Ten Storms"],
-  47141:["Shoulders","Earthfury Pauldrons"],
-  47142:["Wrist","Wristguards of Stability"],
-  47143:["Waist","Girdle of Ten Storms"],
-  55095:["Back","Cloak of the Bloody Ravager"],
-  55100:["Main Hand","Checkmate"],
-  55125:["Hands","Handwraps of Dead Winds"],
-  55276:["Main Hand","Forgotten Raven's Mallet"],
-  55347:["Main Hand","Thunderfall, Stormhammer of the Chief Thane"],
-  55353:["Ring 1","Mephistroth's Cunning"],
-  55357:["Waist","Sash of the Grand Betrayal"],
-  55508:["Ring 1","Brand of Karazhan"],
-  55515:["Back","Felforged Nathrezan Veil"],
-  58146:["Ranged","Totem of the Thundercaller"],
-  58211:["Trinket 1","Molten Emberstone"],
-  58212:["Feet","Treads of Scalding Rage"],
-  58214:["Main Hand","Modrag'zan, Heart of the Mountain"],
-  58244:["Trinket 1","Sigil of Ancient Accord"],
-  61010:["Back","Wing of the Time-Lord"],
-  61194:["Trinket 1","Heart of Dreams"],
-  61204:["Main Hand","Nightfall"],
-  61212:["Wrist","Sanctum Bark Wraps"],
-  61239:["Wrist","Qiraji Execution Bracers"],
-  61275:["Wrist","Sanctum Bark Wraps"],
-  61277:["Main Hand","Fist of the Forgotten Order"],
-  61292:["Ranged","Totem of the Storm"],
-  61299:["Trinket 1","Shawl of the Castellan"],
-  61758:["Chest","Savage Gladiator Chain"],
-  65036:["Chest","Breastplate of Earthen Might"],
-  69107:["Ring 1","Don Julio's Band"],
-  69999:["Ranged","Totem of the Thundercaller"],
-  81264:["Shoulders","Shoulderpads of True Flight"],
-  83416:["Chest","Breastplate of the Chromatic Flight"],
-  83440:["Main Hand","Boneshatter Maul"],
-  216100:["Head","Stormhowl Crown"],
-  216101:["Head","Earthshatter Crown"],
-  216120:["Shoulders","Stormhowl Pauldrons"],
-  216121:["Shoulders","Earthshatter Pauldrons"],
-  216130:["Chest","Stormhowl Breastplate"],
-  216131:["Chest","Earthshatter Breastplate"],
-  216141:["Wrist","Bracelets of Ten Storms"],
-  216152:["Hands","Fists of Ten Storms"],
-  216153:["Hands","Earthshatter Fists"],
-  216160:["Waist","Earthshatter Girdle"],
-  216170:["Legs","Stormhowl Leggings"],
-  216172:["Legs","Earthshatter Leggings"],
-  216190:["Feet","Stormhowl Sabatons"],
-  216191:["Feet","Earthshatter Sabatons"],
-  216192:["Feet","Sabatons of Ten Storms"],
-  216200:["Ring 1","Signet of the Earthshatterer"],
-  216203:["Ring 1","Master Dragonslayer's Ring"],
-  216210:["Trinket 1","Shieldrender Talisman"],
-  216220:["Main Hand","Shar'tateth, the Shattered Edge"],
-  216222:["Main Hand","Severance"],
-  216224:["Main Hand","Elementium Reaper"],
-  216225:["Main Hand","Spinal Reaper"],
-  216233:["Main Hand","Nightfall"],
-  216240:["Off Hand","Ward of the Elements"],
-  216250:["Ranged","Totem of Ancestral Guidance"],
-  216251:["Ranged","Totem of Flowing Water"],
-  216252:["Ranged","Totem of Sustaining"],
+var ARMORY_ITEM_ID_MAP = {};  // removed — use ITEMS_BY_ID (built from data/*.json)
+
+// inventoryType → sim slot name (from ichasarmory.quest armory.js)
+const INVTYPE_SLOT_MAP = {
+  1:'Head', 2:'Neck', 3:'Shoulders', 5:'Chest', 6:'Waist', 7:'Legs',
+  8:'Feet', 9:'Wrist', 10:'Hands', 11:'Ring 1', 12:'Trinket 1',
+  13:'Main Hand', 14:'Off Hand', 15:'Ranged', 16:'Back', 17:'Main Hand',
+  20:'Chest', 21:'Main Hand', 22:'Off Hand', 23:'Off Hand', 25:'Ranged', 26:'Ranged'
 };
 
 function applyImportData(importedItems, race, charName) {
@@ -2657,58 +2506,73 @@ function applyImportData(importedItems, race, charName) {
   if (raceSel && race) raceSel.value = race;
   GEAR_SEL = {}; ENCHANT_SEL = {};
   var ring1Used = false, ring2Used = false, t1Used = false, t2Used = false;
+  var mhUsed = false;
+  var usedSlots = new Set();
 
   importedItems.forEach(entry => {
-    var known = ARMORY_ITEM_ID_MAP[entry.itemId];
-    if (!known) return;
-    var baseSlot = known[0], itemName = known[1], slotToAssign = baseSlot;
+    var itemId = entry.itemId;
+    var invType = entry.inventoryType || 0;
 
-    if (baseSlot === 'Ring 1') {
-      if (!ring1Used) { slotToAssign = 'Ring 1'; ring1Used = true; }
-      else if (!ring2Used) { slotToAssign = 'Ring 2'; ring2Used = true; }
-      else return;
-    } else if (baseSlot === 'Trinket 1') {
-      if (!t1Used) { slotToAssign = 'Trinket 1'; t1Used = true; }
-      else if (!t2Used) { slotToAssign = 'Trinket 2'; t2Used = true; }
-      else return;
-    } else if (baseSlot === 'Ranged' || baseSlot === 'Off Hand') {
-      slotToAssign = baseSlot;
+    // ── STEP 1: Resolve item name + base slot ─────────────────────
+    // Priority: ITEMS_BY_ID (our JSON DB by ID) → ARMORY_ITEM_ID_MAP (static fallback)
+    var slotToAssign = null, itemName = null;
+    var idEntry = window.ITEMS_BY_ID && window.ITEMS_BY_ID[String(itemId)];
+    if (idEntry) {
+      slotToAssign = idEntry.slot;
+      itemName = idEntry.item.name;
+    } else {
+      var known = ARMORY_ITEM_ID_MAP[itemId];
+      if (known) { slotToAssign = known[0]; itemName = known[1]; }
+    }
+    if (!slotToAssign || !itemName) return;
+
+    // ── STEP 2: Use inventoryType to fix weapon/offhand/ranged slot ─
+    // Mirrors ichasarmory.quest — invType from armory JSON is the ground truth
+    if (invType) {
+      if (invType === 17) { slotToAssign = 'Main Hand'; mhUsed = true; }
+      else if (invType === 13) { slotToAssign = mhUsed ? 'Off Hand' : 'Main Hand'; if (!mhUsed) mhUsed = true; }
+      else if (invType === 21) { slotToAssign = 'Main Hand'; mhUsed = true; }
+      else if (invType === 14 || invType === 22 || invType === 23) slotToAssign = 'Off Hand';
+      else if (invType === 15 || invType === 25 || invType === 26) slotToAssign = 'Ranged';
     }
 
-    // Accept the item if it's in our DB OR if it was live-fetched (has _live flag)
+    // ── STEP 3: Handle ring/trinket dual slots ────────────────────
+    if (slotToAssign === 'Ring 1' || slotToAssign === 'Ring 2') {
+      slotToAssign = ring1Used ? 'Ring 2' : 'Ring 1';
+      if (!ring1Used) ring1Used = true; else ring2Used = true;
+      if (ring2Used && slotToAssign === 'Ring 2' && ring1Used) {} // ok
+      else if (ring2Used) return; // both filled
+    } else if (slotToAssign === 'Trinket 1' || slotToAssign === 'Trinket 2') {
+      slotToAssign = t1Used ? 'Trinket 2' : 'Trinket 1';
+      if (!t1Used) t1Used = true; else t2Used = true;
+      if (t2Used) {} else if (t2Used) return;
+    }
+
+    // Skip already-filled slots (prevents duplicate sidebar items)
+    if (usedSlots.has(slotToAssign)) return;
+    usedSlots.add(slotToAssign);
+
+    // ── STEP 4: Place item ────────────────────────────────────────
     if (!GEAR_DB[slotToAssign]) GEAR_DB[slotToAssign] = [];
     var slotItems = GEAR_DB[slotToAssign];
-    var existing = slotItems.find(i => i.name === itemName);
-
-    if (existing || slotItems.some(i => i._live && i.name === itemName)) {
-      // Already in DB (static or live-injected)
-      GEAR_SEL[slotToAssign] = itemName;
-      matched++;
+    if (slotItems.find(i => i.name === itemName) || slotItems.some(i => i._live && i.name === itemName)) {
+      GEAR_SEL[slotToAssign] = itemName; matched++;
     } else if (LIVE_ITEM_CACHE[entry.itemId]) {
-      // Live data was fetched but inject may have used a slightly different name
       var live = LIVE_ITEM_CACHE[entry.itemId];
       var liveName = (live.name && live.name.length > 2) ? live.name : itemName;
-      GEAR_SEL[slotToAssign] = liveName;
-      matched++;
+      GEAR_SEL[slotToAssign] = liveName; matched++;
     } else {
-      // No live data and not in static DB — still place it with empty stats
-      // so the slot shows the item name rather than being blank
       slotItems.push({ name: itemName, stats: {}, _placeholder: true });
-      GEAR_SEL[slotToAssign] = itemName;
-      matched++;
+      GEAR_SEL[slotToAssign] = itemName; matched++;
     }
 
-    // Apply enchant
+    // ── STEP 5: Apply enchant by effectId (mirrors findEnchantIndexByEffectId) ─
     if (entry.effectId) {
-      var effectSlots = ENCHANT_EFFECT_MAP[entry.effectId];
-      if (effectSlots) {
-        var enchantName = effectSlots[slotToAssign];
-        if (!enchantName && slotToAssign === 'Ring 2') enchantName = effectSlots['Ring 2'];
-        if (enchantName) {
-          var slotEnchants = ENCHANT_DB[slotToAssign] || [];
-          if (slotEnchants.find(e => e.name === enchantName)) {
-            ENCHANT_SEL[slotToAssign] = enchantName;
-          }
+      var enchName = findEnchantByEffectId(slotToAssign, entry.effectId);
+      if (enchName) {
+        var slotEnchants = ENCHANT_DB[slotToAssign] || [];
+        if (slotEnchants.find(e => e.name === enchName)) {
+          ENCHANT_SEL[slotToAssign] = enchName;
         }
       }
     }
@@ -2767,6 +2631,60 @@ const QUALITY_COLORS = { 1:'#9d9d9d', 2:'#1eff00', 3:'#0070dd', 4:'#a335ee', 5:'
 const QUALITY_BORDER = { 1:'q1', 2:'q2', 3:'q3', 4:'q4', 5:'q5' };
 
 async function loadGearDB() {
+  // Load enchants from data/enchants.json (JS module, strip export wrapper)
+  try {
+    const enchantRes = await fetch('./data/enchants.json');
+    const enchantText = await enchantRes.text();
+    // Strip JS module wrapper: "export const enchantDatabase = {...};"
+    const enchantJson = enchantText
+      .replace(/^export const enchantDatabase\s*=\s*/, '')
+      .replace(/;\s*$/, '')
+      .trim();
+    const rawEnchants = JSON.parse(enchantJson);
+
+    // Stat key mapping: enchant raw keys → sim internal keys
+    const ENCH_STAT_MAP = {
+      str:'Strength', agi:'Agility', sta:'Stamina', int:'Int', spi:'Spirit',
+      ap:'AP', attackPower:'AP', hit:'Hit %', hitPercent:'Hit %',
+      crit:'Crit %', haste:'Haste', armorPen:'Armor Pen',
+      dmgAndHealing:'Spellpower', healing:'Spellpower',
+      natureDamage:'Nature Spellpower', fireDamage:'Fire Spellpower',
+      mp5:'MP5', manaRegen:'MP5',
+    };
+    // Slot name mapping: enchant file keys → sim slot names
+    const ENCH_SLOT_MAP = {
+      head:'Head', neck:'Neck', shoulder:'Shoulders', back:'Back',
+      chest:'Chest', wrist:'Wrist', hands:'Hands', waist:'Waist',
+      legs:'Legs', feet:'Feet', ring1:'Ring 1', ring2:'Ring 2',
+      mainhand:'Main Hand', offhand:'Off Hand', ranged:'Ranged',
+    };
+
+    for (const [slotKey, enchants] of Object.entries(rawEnchants)) {
+      const simSlot = ENCH_SLOT_MAP[slotKey];
+      if (!simSlot) continue;
+      ENCHANT_DB[simSlot] = enchants
+        .filter(e => e.name !== 'None')
+        .map(e => {
+          const stats = {};
+          for (const [k, v] of Object.entries(e.stats || {})) {
+            if (k === 'allStats') {
+              ['Strength','Agility','Stamina','Int','Spirit'].forEach(s => stats[s] = (stats[s]||0) + v);
+            } else if (ENCH_STAT_MAP[k]) {
+              const mapped = ENCH_STAT_MAP[k];
+              stats[mapped] = (stats[mapped]||0) + (
+                ['Hit %','Crit %','Haste'].includes(mapped) ? v/100 : v
+              );
+            }
+          }
+          return { name: e.name, stats, effect_id: e.effect_id || 0 };
+        });
+    }
+    console.log(`[DB] Enchants loaded: ${Object.values(ENCHANT_DB).reduce((s,a)=>s+a.length,0)} enchants`);
+  } catch(e) {
+    console.error('[DB] Failed to load enchants:', e);
+  }
+
+
   const slots = ['head','neck','shoulder','back','chest','wrist','hands','waist',
                  'legs','feet','ring1','trinket1','mainhand','offhand','ranged'];
   
@@ -2827,6 +2745,20 @@ async function loadGearDB() {
   document.getElementById('loadOverlay').classList.add('hidden');
   const total = Object.values(GEAR_DB).reduce((s,a) => s + a.length, 0);
   document.getElementById('dbStatus').textContent = `Loaded (${total.toLocaleString()} items)`;
+
+  // Build numeric ID → item index (mirrors itemLoader.itemsById)
+  // This enables O(1) lookup in armory import instead of name matching
+  window.ITEMS_BY_ID = {};
+  for (const [slot, items] of Object.entries(GEAR_DB)) {
+    for (const item of items) {
+      if (item.id) {
+        // Preserve which sim slot this item maps to
+        window.ITEMS_BY_ID[String(item.id)] = { item, slot };
+      }
+    }
+  }
+  console.log(`[DB] Built ID index: ${Object.keys(window.ITEMS_BY_ID).length} items`);
+
   renderAllSlots();
   updateArmorBar();
 }
