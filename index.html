@@ -463,6 +463,44 @@ select { cursor: pointer; }
 .enemy-bar-container { position: relative; height: 20px; background: #2a2a2a; border-radius: 4px; overflow: hidden; }
 .enemy-bar-fill { height: 100%; background: linear-gradient(90deg, #e53935, #ff7043); transition: width 0.3s; }
 .enemy-bar-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: #fff; }
+
+/* ── WoW-style Item Tooltip ── */
+#wow-tooltip {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  display: none;
+  width: 280px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(255,255,255,0.05);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+#wow-tooltip .tt-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+#wow-tooltip .tt-q1 { color: #9d9d9d; }
+#wow-tooltip .tt-q2 { color: #1eff00; }
+#wow-tooltip .tt-q3 { color: #0070dd; }
+#wow-tooltip .tt-q4 { color: #a335ee; }
+#wow-tooltip .tt-q5 { color: #ff8000; }
+#wow-tooltip .tt-slot { color: #fff; display: flex; justify-content: space-between; margin-bottom: 2px; }
+#wow-tooltip .tt-armor { color: #fff; margin-bottom: 4px; }
+#wow-tooltip .tt-stat { color: #ffd100; }
+#wow-tooltip .tt-green { color: #1eff00; }
+#wow-tooltip .tt-equip { color: #1eff00; }
+#wow-tooltip .tt-set-name { color: #ffd100; margin-top: 6px; font-weight: 600; }
+#wow-tooltip .tt-set-member { color: #9d9d9d; padding-left: 8px; font-size: 0.78rem; }
+#wow-tooltip .tt-set-member.equipped { color: #fff; }
+#wow-tooltip .tt-set-bonus { color: #9d9d9d; font-size: 0.78rem; margin-top: 2px; }
+#wow-tooltip .tt-set-bonus.active { color: #ffd100; }
+#wow-tooltip .tt-sep { border: none; border-top: 1px solid #333; margin: 5px 0; }
+#wow-tooltip .tt-req { color: #ff4444; }
+#wow-tooltip .tt-flavor { color: #999; font-style: italic; }
+#wow-tooltip .tt-weapon { color: #fff; display: flex; justify-content: space-between; }
+#wow-tooltip .tt-dps { color: #fff; text-align: center; font-size: 0.78rem; color: #aaa; }
 </style>
 </head>
 <body>
@@ -1356,7 +1394,11 @@ function renderGearSlot(slot) {
     ? `<img src="${iconUrl}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none">${SLOT_ICONS_DEFAULT[slot]||'❔'}</span>`
     : (SLOT_ICONS_DEFAULT[slot] || '❔');
 
-  return `<div class="char-slot" onclick="openItemModal('${slot}')">
+  return `<div class="char-slot" onclick="openItemModal('${slot}')"
+    data-item-name="${itemName.replace(/'/g,'\'').replace(/"/g,'&quot;')}"
+    data-item-slot="${slot}"
+    onmouseenter="showTooltipFromEl(this,event)"
+    onmouseleave="hideItemTooltip()">
     <div class="slot-icon ${iconQualClass}">${iconHtml}</div>
     <div class="slot-info">
       <div class="slot-name" style="color:${displayColor}">${displayName}</div>
@@ -2564,6 +2606,219 @@ async function loadGearDB() {
   updateArmorBar();
 }
 
+
+
+const SET_DATABASE = {
+  battlegear_ten_storms: {
+    displayName: "Battlegear of the Ten Storms",
+    itemIds: [16943,16944,16945,16946,16947,16948,16949,16950,47136,47137,47138,47139,47140,47141,47142,47143,47144,47145,47146,47147,47148,47149,47150,47151],
+    bonuses: {3:"Reduces the cooldown of Stormstrike and Lightning Strike by 0.5 seconds.",5:"Lightning Strike causes your next attack to deal an additional 10% of its damage as Nature damage.",8:"Your Stormstrike has a 25% chance to cause your next Lightning Bolt to cast instantly and guarantee it to land."}
+  },
+  stormhowl_battlegear: {
+    displayName: "Stormhowl Battlegear",
+    itemIds: [47180,47181,47182,47183,47184,47185,47192,47193,47194,47195,47196,47197],
+    bonuses: {3:"Melee attacks have 15% chance to trigger Empowered Lightning Shield without consuming a charge.",5:"Auto attacks have 10% chance to grant Stormwolf's Frenzy (+10% attack speed, +5% strength for 12s)."}
+  },
+  stormhowl_garb: {
+    displayName: "Stormhowl Garb",
+    itemIds: [47186,47187,47188,47189,47190,47191],
+    bonuses: {3:"Increases the mana-cost reduction of Clearcasting to 70%.",5:"Elemental Mastery infuses you with Stormwolf's Cunning, increasing casting speed by 10% for 12 sec."}
+  },
+  earthfury: {
+    displayName: "The Earthfury",
+    itemIds: [16837,16838,16839,16840,16841,16842,16843,16844,47120,47121,47122,47123,47124,47125,47126,47127,47128,47129,47130,47131,47132,47133,47134,47135],
+    bonuses: {5:"Flametongue Weapon deals 45% more damage against targets affected by your Flame Shock."}
+  },
+  earthshatterer: {
+    displayName: "Earthshatterer's Battlegear",
+    itemIds: [47162,47163,47164,47168,47169,47166],
+    bonuses: {2:"Increases the damage from the Attack Power coefficient of Empowered Lightning Shield by 15%."}
+  },
+  stormcaller_s_battlegear: {
+    displayName: "Stormcaller's Battlegear",
+    itemIds: [21372,21373,21374,21375,21376,47152,47153,47154,47155,47156,47157,47158,47159,47160,47161],
+    bonuses: {5:"Increases the effects of Rockbiter Weapon by 25%."}
+  },
+  black_dragon_mail: {
+    displayName: "Black Dragon Mail",
+    itemIds: [16984,15050,15052,15051],
+    bonuses: {2:"Improves your chance to hit by 1%.",3:"Improves your chance to get a critical strike by 2%."}
+  },
+  towerforge_battlegear: {
+    displayName: "Towerforge Battlegear",
+    itemIds: [60007,60008,60009,60010],
+    bonuses: {2:"Increased Two-handed Maces +6.",4:"Your melee hits have a 2% chance to grant 50 Strength for 10 sec."}
+  },
+  incendosaur: {
+    displayName: "Incendosaur",
+    itemIds: [60572,60568,60582],
+    bonuses: {3:"5% chance on melee attacks to trigger a Spellstrike dealing 15-26 fire damage."}
+  }
+};
+
+// Build reverse lookup: itemId -> {setKey, setData}
+const ITEM_TO_SET = {};
+for (const [key, data] of Object.entries(SET_DATABASE)) {
+  for (const id of data.itemIds) ITEM_TO_SET[id] = key;
+}
+
+// Get set info for a given item id: how many pieces equipped, set data
+function getSetInfoForItem(itemId) {
+  const setKey = ITEM_TO_SET[itemId];
+  if (!setKey) return null;
+  const setData = SET_DATABASE[setKey];
+  // Count equipped pieces
+  var equipped = 0;
+  ALL_GEAR_SLOTS.forEach(slot => {
+    var slotItems = GEAR_DB[slot] || [];
+    var item = slotItems.find(i => i.name === (GEAR_SEL[slot] || ''));
+    if (item && item.id && ITEM_TO_SET[item.id] === setKey) equipped++;
+  });
+  return { setKey, setData, equipped };
+}
+
+// ── Tooltip System ──────────────────────────────────────────────
+
+function getQualityClass(q) {
+  return 'tt-q' + (q || 1);
+}
+
+function buildItemTooltip(item, slot) {
+  if (!item) return '';
+  var s = item.stats || {};
+  var q = item.quality || 2;
+  var html = '';
+
+  // Name
+  html += '<div class="tt-name ' + getQualityClass(q) + '">' + item.name + '</div>';
+
+  // Slot + armor type OR weapon type
+  if (item.weapon) {
+    var wt = item.weapon.weapon_type || '';
+    var isTwo = ['Two-Handed Sword','Two-Handed Axe','Two-Handed Mace','Polearm','Staff'].some(t => wt.includes('Two') || wt.includes('Pole') || wt.includes('Staff'));
+    html += '<div class="tt-slot"><span>' + (isTwo ? 'Two-Hand' : 'One-Hand') + '</span><span>' + wt + '</span></div>';
+    if (item.weapon.min_dmg) {
+      html += '<div class="tt-weapon"><span>' + item.weapon.min_dmg + ' - ' + item.weapon.max_dmg + ' Damage</span><span>Speed ' + (item.weapon.speed||2.6).toFixed(2) + '</span></div>';
+      var dps = ((item.weapon.min_dmg + item.weapon.max_dmg) / 2 / (item.weapon.speed||2.6));
+      html += '<div class="tt-dps">(' + dps.toFixed(1) + ' damage per second)</div>';
+    }
+  } else {
+    var slotLabel = slot || '';
+    var armorLabel = item.armor_type || '';
+    html += '<div class="tt-slot"><span>' + slotLabel + '</span><span>' + armorLabel + '</span></div>';
+  }
+
+  html += '<hr class="tt-sep">';
+
+  // Stats
+  var statOrder = [
+    ['Strength','Strength'], ['Agility','Agility'], ['Stamina','Stamina'],
+    ['Int','Intellect'], ['Spirit','Spirit'],
+    ['AP','Attack Power'], ['Crit %','Critical Strike Chance'],
+    ['Hit %','Hit Chance'], ['Haste','Haste Rating'],
+    ['Armor Pen','Armor Penetration'], ['Spellpower','Spell Damage and Healing'],
+    ['Nature Spellpower','Nature Spell Damage'], ['Fire Spellpower','Fire Spell Damage'],
+    ['MP5','Mana per 5 sec.'], ['Weapon Skill','Weapon Skill'],
+  ];
+  statOrder.forEach(function([key, label]) {
+    var v = s[key];
+    if (!v) return;
+    if (key === 'Crit %' || key === 'Hit %' || key === 'Haste') {
+      html += '<div class="tt-stat">+' + (v*100).toFixed(0) + '% ' + label + '</div>';
+    } else {
+      html += '<div class="tt-stat">+' + Math.round(v) + ' ' + label + '</div>';
+    }
+  });
+
+  // Req level
+  if (item.req_level && item.req_level > 1) {
+    html += '<hr class="tt-sep">';
+    html += '<div class="tt-req">Requires Level ' + item.req_level + '</div>';
+  }
+
+  // Set bonus section
+  if (item.id) {
+    var setInfo = getSetInfoForItem(item.id);
+    if (setInfo) {
+      var sd = setInfo.setData;
+      var equipped = setInfo.equipped;
+      html += '<hr class="tt-sep">';
+      html += '<div class="tt-set-name">' + sd.displayName + ' (' + equipped + '/' + sd.itemIds.length + ')</div>';
+
+      // Show set member names that we know
+      var memberIds = sd.itemIds;
+      memberIds.forEach(function(mid) {
+        var entry = window.ITEMS_BY_ID && window.ITEMS_BY_ID[String(mid)];
+        if (entry) {
+          var isEquipped = Object.values(GEAR_SEL).some(function(n) { return n === entry.item.name; });
+          html += '<div class="tt-set-member ' + (isEquipped?'equipped':'') + '">' + entry.item.name + '</div>';
+        }
+      });
+
+      // Set bonuses
+      html += '<div style="margin-top:4px;">';
+      Object.entries(sd.bonuses).forEach(function([pieces, desc]) {
+        var pc = parseInt(pieces);
+        var active = equipped >= pc;
+        html += '<div class="tt-set-bonus ' + (active?'active':'') + '">★ (' + pc + ') Set: ' + desc + '</div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  return html;
+}
+
+// Tooltip element + show/hide
+var _ttEl = null;
+function getTooltipEl() {
+  if (!_ttEl) {
+    _ttEl = document.createElement('div');
+    _ttEl.id = 'wow-tooltip';
+    document.body.appendChild(_ttEl);
+  }
+  return _ttEl;
+}
+
+function showItemTooltip(itemName, slot, event) {
+  if (!itemName) return;
+  var items = GEAR_DB[slot] || [];
+  var item = items.find(function(i) { return i.name === itemName; });
+  if (!item) return;
+  var el = getTooltipEl();
+  el.innerHTML = buildItemTooltip(item, slot);
+  el.style.display = 'block';
+  positionTooltip(event);
+}
+
+function showTooltipFromEl(el, event) {
+  var itemName = el.dataset.itemName;
+  var slot = el.dataset.itemSlot;
+  if (!itemName || !slot) return;
+  showItemTooltip(itemName, slot, event);
+}
+
+function hideItemTooltip() {
+  var el = getTooltipEl();
+  if (el) el.style.display = 'none';
+}
+
+function positionTooltip(event) {
+  var el = getTooltipEl();
+  if (!el || el.style.display === 'none') return;
+  var x = event.clientX + 16;
+  var y = event.clientY + 8;
+  var w = el.offsetWidth || 280;
+  var h = el.offsetHeight || 200;
+  if (x + w > window.innerWidth - 8) x = event.clientX - w - 8;
+  if (y + h > window.innerHeight - 8) y = event.clientY - h - 8;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+}
+
+document.addEventListener('mousemove', function(e) {
+  positionTooltip(e);
+});
 
 window.onload = function() {
   document.getElementById('enemy_armor').addEventListener('input', updateArmorBar);
