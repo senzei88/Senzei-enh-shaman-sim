@@ -619,7 +619,7 @@ select { cursor: pointer; }
             <div class="gp-input-group"><label>ArP</label><input type="number" id="weight_arp" value="0.467" oninput="recalcItemScores()"></div>
           </div>
 
-          <h2 style="margin:20px 0 10px 0; font-size:1rem;">Current Gear Stats</h2>
+          <h2 style="margin:20px 0 10px 0; font-size:1rem;">Character Stats <span style="font-size:0.65rem;color:#666;font-family:Inter,sans-serif;font-weight:400;">(unbuffed)</span></h2>
           <div class="gp-stats-preview">
             <div class="gp-score-box">
               <div class="gp-score-label">Gear Score (EP)</div>
@@ -682,9 +682,9 @@ select { cursor: pointer; }
                 </small>
               </div>
               <div class="checkbox-grid-1">
-                <label class="custom-checkbox"><input type="checkbox" id="consum_mongoose"><span class="checkmark"></span> Elixir of the Mongoose (+25 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_giants"><span class="checkmark"></span> Elixir of Giants (+25 Str)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_firewater"><span class="checkmark"></span> Winterfall Firewater (+35 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_mongoose" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Elixir of the Mongoose (+25 Agi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_giants" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Elixir of Giants (+25 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_firewater" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Winterfall Firewater (+35 AP)</label>
                 <div style="margin-top:8px;font-size:0.8rem;color:#666;">Spell</div>
                 <label class="custom-checkbox"><input type="checkbox" id="consum_arcane_elixir" checked><span class="checkmark"></span> Arcane Elixir (+150 SP)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="consum_nature_power" checked><span class="checkmark"></span> Nature Power (+20 Nature SP)</label>
@@ -694,7 +694,7 @@ select { cursor: pointer; }
                 <div style="margin-top:8px;font-size:0.8rem;color:#666;">Mana</div>
                 <label class="custom-checkbox"><input type="checkbox" id="consum_mageblood" checked><span class="checkmark"></span> Mageblood Potion (+8 MP5)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="consum_zanza" checked><span class="checkmark"></span> Zanza (+50 SP / +50 Res)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamshard" checked><span class="checkmark"></span> Dreamshard (+20 AP / +5 MP5)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamshard" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Dreamshard (+20 AP / +5 MP5)</label>
               </div>
             </div>
 
@@ -709,11 +709,11 @@ select { cursor: pointer; }
               </div>
               <div class="checkbox-grid-1">
                 <div style="font-size:0.8rem;color:#666;">Blasted Lands</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_scorpok"><span class="checkmark"></span> Scorpok Assay (+25 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_roids"><span class="checkmark"></span> R.O.I.D.S (+25 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_scorpok" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Scorpok Assay (+25 Agi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_roids" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> R.O.I.D.S (+25 Str)</label>
                 <div style="margin-top:8px;font-size:0.8rem;color:#666;">Jujus</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_might"><span class="checkmark"></span> Juju Might (+40 AP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_power"><span class="checkmark"></span> Juju Power (+30 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_might" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Juju Might (+40 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_power" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Juju Power (+30 Str)</label>
                 <div style="margin-top:8px;font-size:0.8rem;color:#666;">Mana Items (used in fight)</div>
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
                   <label style="font-size:0.85rem;color:#aaa;white-space:nowrap;">Major Mana Pots:</label>
@@ -753,10 +753,10 @@ select { cursor: pointer; }
               </div>
               <div class="checkbox-grid-1">
                 <label class="custom-checkbox"><input type="checkbox" id="buff_motw" checked><span class="checkmark"></span> Mark of the Wild (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_kings" checked><span class="checkmark"></span> Blessing of Kings</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_might" checked><span class="checkmark"></span> Blessing of Might (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_bs" checked><span class="checkmark"></span> Battle Shout (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_ai" checked><span class="checkmark"></span> Arcane Intellect</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_kings" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Blessing of Kings</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_might" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Blessing of Might (Imp)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_bs" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Battle Shout (Imp)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_ai" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Arcane Intellect</label>
                 <label class="custom-checkbox"><input type="checkbox" id="buff_divine_spirit" checked><span class="checkmark"></span> Divine Spirit</label>
                 <label class="custom-checkbox"><input type="checkbox" id="buff_lotp"><span class="checkmark"></span> Leader of the Pack</label>
                 <label class="custom-checkbox"><input type="checkbox" id="buff_trueshot"><span class="checkmark"></span> Trueshot Aura</label>
@@ -766,9 +766,9 @@ select { cursor: pointer; }
                 <label class="custom-checkbox"><input type="checkbox" id="buff_wisdom" checked><span class="checkmark"></span> Blessing of Wisdom</label>
                 <div style="margin-top:8px;font-size:0.8rem;color:#666;">Totems (from others)</div>
                 <label class="custom-checkbox"><input type="checkbox" id="buff_wf_totem"><span class="checkmark"></span> Windfury Totem</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_soe" checked><span class="checkmark"></span> Strength of Earth (+77 Str)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_goa" checked><span class="checkmark"></span> Grace of Air (+77 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_totem_rage"><span class="checkmark"></span> Totem of Rage (+50 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_soe" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Strength of Earth (+77 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_goa" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Grace of Air (+77 Agi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_totem_rage" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Totem of Rage (+50 AP)</label>
               </div>
             </div>
 
@@ -1521,25 +1521,28 @@ function resetGear() {
 }
 
 function updateGearStats() {
-  var totals = { Strength:0, Agility:0, AP:0, 'Crit %':0, 'Hit %':0, Haste:0, Int:0, 'Armor Pen':0, Spellpower:0, 'Nature Spellpower':0, 'Fire Spellpower':0 };
+  // Sum gear + enchant stats then add BASE race stats
+  // Shows unbuffed stats matching your character sheet
+  var gear = { Strength:0, Agility:0, AP:0, 'Crit %':0, 'Hit %':0, Haste:0, Int:0,
+               'Armor Pen':0, Spellpower:0, 'Nature Spellpower':0, 'Fire Spellpower':0, Stamina:0 };
   var totalEP = 0;
 
   ALL_GEAR_SLOTS.forEach(slot => {
     var items = GEAR_DB[slot] || [];
     var item = items.find(i => i.name === (GEAR_SEL[slot]||''));
     if (item && item.stats) {
-      Object.entries(item.stats).forEach(([k,v]) => { if (totals[k]!==undefined) totals[k]+=v; });
+      Object.entries(item.stats).forEach(([k,v]) => { if (gear[k]!==undefined) gear[k]+=v; });
       totalEP += calcItemEP(item);
     }
     var enchants = ENCHANT_DB[slot] || [];
     var ench = enchants.find(e => e.name === (ENCHANT_SEL[slot]||''));
     if (ench && ench.stats) {
-      Object.entries(ench.stats).forEach(([k,v]) => { if (totals[k]!==undefined) totals[k]+=v; });
+      Object.entries(ench.stats).forEach(([k,v]) => { if (gear[k]!==undefined) gear[k]+=v; });
       totalEP += calcItemEP(ench);
     }
   });
 
-  // Also add weapon stats from weapon DB
+  // Add weapon stats
   var wepName = GEAR_SEL['Main Hand'] || '';
   var wepData = WEAPON_DB.find(w => w.name === wepName);
   if (wepData) {
@@ -1548,16 +1551,32 @@ function updateGearStats() {
     document.getElementById('stat_wep_speed').value = wepData.speed;
   }
 
+  // Base race stats (unbuffed, matches character sheet)
+  var race = (document.getElementById('race')||{}).value || 'Orc';
+  var baseStr=80, baseAgi=60, baseInt=60;
+  if (race==='Troll')  { baseStr=73; baseAgi=75; baseInt=56; }
+  else if (race==='Tauren') { baseStr=85; baseAgi=55; baseInt=55; }
+
+  var finalStr = baseStr + gear.Strength;
+  var finalAgi = baseAgi + gear.Agility;
+  var finalInt = baseInt + gear.Int;
+
+  // AP = item AP + Str*2 + Agi (no buffs — matches unbuffed sheet)
+  var finalAP = gear.AP + finalStr * 2 + finalAgi;
+
+  // Crit = gear crit + Agi/20 + Thundering Strikes 5/5 (+5%)
+  var finalCrit = 2.25 + (gear['Crit %'] * 100) + (finalAgi / 20) + 5.0; // 2.25% base shaman crit
+
   document.getElementById('gp_gs').textContent = totalEP.toFixed(0);
-  document.getElementById('gp_str').textContent = Math.round(totals.Strength);
-  document.getElementById('gp_agi').textContent = Math.round(totals.Agility);
-  document.getElementById('gp_ap').textContent = Math.round(totals.AP);
-  document.getElementById('gp_crit').textContent = (totals['Crit %']*100).toFixed(2)+'%';
-  document.getElementById('gp_hit').textContent = (totals['Hit %']*100).toFixed(2)+'%';
-  document.getElementById('gp_haste').textContent = (totals['Haste']*100).toFixed(2)+'%';
-  document.getElementById('gp_sp').textContent = Math.round(totals.Spellpower + totals['Nature Spellpower'] + totals['Fire Spellpower']);
-  document.getElementById('gp_int').textContent = Math.round(totals.Int);
-  document.getElementById('gp_arp').textContent = Math.round(totals['Armor Pen']);
+  document.getElementById('gp_str').textContent = Math.round(finalStr);
+  document.getElementById('gp_agi').textContent = Math.round(finalAgi);
+  document.getElementById('gp_ap').textContent = Math.round(finalAP);
+  document.getElementById('gp_crit').textContent = finalCrit.toFixed(2)+'%';
+  document.getElementById('gp_hit').textContent = (gear['Hit %']*100).toFixed(2)+'%';
+  document.getElementById('gp_haste').textContent = (gear['Haste']*100).toFixed(2)+'%';
+  document.getElementById('gp_sp').textContent = Math.round(gear.Spellpower + gear['Nature Spellpower'] + gear['Fire Spellpower']);
+  document.getElementById('gp_int').textContent = Math.round(finalInt);
+  document.getElementById('gp_arp').textContent = Math.round(gear['Armor Pen']);
 
   // Update enemy armor bar
   updateArmorBar();
@@ -1783,7 +1802,7 @@ function runCoreSim(cfg, seed) {
   var ts_crit_bonus=cfg.tal_ts*0.01;
   var lotp_crit=cfg.buff_lotp?0.03:0;
   var boomy_crit=cfg.buff_boomy?0.03:0;
-  var final_crit=Math.max(0,agi/20/100+phys_crit+ts_crit_bonus+lotp_crit+boomy_crit-0.018);
+  var final_crit=Math.max(0,0.0225+agi/20/100+phys_crit+ts_crit_bonus+lotp_crit+boomy_crit); // 2.25% base shaman crit
   if(cfg.consum_elemental_stone)final_crit+=0.02;
 
   // Spell stats
