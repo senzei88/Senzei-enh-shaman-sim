@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2148,6 +2149,7 @@ function finalizeResults(allResults, cfg) {
 let GEAR_DB = {};
 
 let ENCHANT_DB = {};  // loaded from data/enchants.json
+const DATA_VERSION = '1775602749'; // bump when pushing new data files
 
 let WEAPON_DB = [];
 
@@ -2318,7 +2320,7 @@ const QUALITY_BORDER = { 1:'q1', 2:'q2', 3:'q3', 4:'q4', 5:'q5' };
 async function loadGearDB() {
   // Load enchants from data/enchants.json (JS module, strip export wrapper)
   try {
-    const enchantRes = await fetch('./data/enchants.json');
+    const enchantRes = await fetch('./data/enchants.json?v=' + DATA_VERSION, { cache: 'no-store' });
     const enchantText = await enchantRes.text();
     // Strip JS module wrapper: "export const enchantDatabase = {...};"
     const enchantJson = enchantText
@@ -2380,8 +2382,8 @@ async function loadGearDB() {
   let loaded = 0;
   const proms = slots.map(async slotKey => {
     try {
-      const url = `./data/${slotKey}.json`;
-      const res = await fetch(url);
+      const url = './data/' + slotKey + '.json?v=' + DATA_VERSION;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(res.status);
       const items = await res.json();
       const displaySlot = SLOT_FILE_MAP[slotKey];
