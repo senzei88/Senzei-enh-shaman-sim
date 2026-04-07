@@ -1011,7 +1011,7 @@ select { cursor: pointer; }
                 <label class="custom-checkbox"><input type="checkbox" id="item_sulfuras"><span class="checkmark"></span> Sulfuras proc (Fire DoT)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_neretzek"><span class="checkmark"></span> Neretzek proc (-armor on hit)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_dtc"><span class="checkmark"></span> DTC proc (Disease DoT)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="orc_racial" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Orc Racial Axe Specialization</label>
+                <label class="custom-checkbox"><input type="checkbox" id="orc_racial" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Orc Racial (+3 Axe/Mace/etc)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="wep_skill_book" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Weapon Skill Book (+5)</label>
               </div>
             </div>
@@ -1202,7 +1202,7 @@ function updateWepSkillDisplay() {
   });
 
   var baseSkill = 300;
-  var orcBonus = document.getElementById('orc_racial') && document.getElementById('orc_racial').checked ? 5 : 0;
+  var orcBonus = document.getElementById('orc_racial') && document.getElementById('orc_racial').checked ? 3 : 0;
   var bookBonus = document.getElementById('wep_skill_book') && document.getElementById('wep_skill_book').checked ? 5 : 0;
   var totalSkill = Math.min(315, baseSkill + gearWepSkill + orcBonus + bookBonus);
 
@@ -1727,7 +1727,7 @@ function runCoreSim(cfg, seed) {
   var phys_dmg_mult=1-armor_dr;
 
   // FIX: base miss = 10% (not 9%)
-  if(cfg.orc_racial)wep_skill+=5;
+  if(cfg.orc_racial)wep_skill+=3;
   if(cfg.wep_skill_book)wep_skill+=5;
   wep_skill=Math.min(wep_skill,315);
   var base_miss=0.10; // FIX: 10%
@@ -2737,6 +2737,7 @@ function mapStats(rawStats) {
     int: 'Int', spi: 'Spirit', ap: 'AP', rap: 'AP',
     crit: 'Crit %', hit: 'Hit %', haste: 'Haste',
     arpen: 'Armor Pen', sp: 'Spellpower',
+    'Weapon Skill': 'Weapon Skill',
   };
   const out = {};
   for (const [k, v] of Object.entries(rawStats)) {
