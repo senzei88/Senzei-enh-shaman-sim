@@ -1595,175 +1595,389 @@ function runCoreSim(cfg, seed) {
   var spell_crit=cfg.spell_crit_pct, spell_hit=cfg.spell_hit_pct;
   var phys_crit=cfg.phys_crit_pct, phys_hit=cfg.phys_hit_pct;
   var haste=cfg.haste_pct, arp=cfg.arp, wep_skill=cfg.wep_skill;
-  var base_str=0,base_agi=0,base_int=0;
-  if(cfg.race==='Orc'){base_str=80;base_agi=60;base_int=60;}
-  else if(cfg.race==='Troll'){base_str=73;base_agi=75;base_int=56;}
-  else if(cfg.race==='Tauren'){base_str=85;base_agi=55;base_int=55;}
+
+  // Base stats by race
+  var base_str=0,base_agi=0,base_int=0,base_spi=0;
+  if(cfg.race==='Orc'){base_str=80;base_agi=60;base_int=60;base_spi=101;}
+  else if(cfg.race==='Troll'){base_str=73;base_agi=75;base_int=56;base_spi=101;}
+  else if(cfg.race==='Tauren'){base_str=85;base_agi=55;base_int=55;base_spi=102;}
+
   var raw_int=base_int+int_v;
   if(cfg.buff_ai)raw_int+=31;
   if(cfg.buff_kings)raw_int*=1.10;
   var final_int=raw_int;
-  var mana_pool=20+15*final_int*(1+cfg.tal_ancestral*0.02);
-  if(cfg.consum_giants)str+=25;if(cfg.consum_roids)str+=25;if(cfg.consum_juju_power)str+=30;
-  if(cfg.consum_mongoose)agi+=25;if(cfg.consum_scorpok)agi+=25;
-  if(cfg.buff_soe)str+=77;if(cfg.buff_goa)agi+=77;
-  if(cfg.buff_might)ap_bonus+=185;if(cfg.buff_bs)ap_bonus+=193;
-  if(cfg.buff_totem_rage)ap_bonus+=50;if(cfg.consum_juju_might)ap_bonus+=40;
-  if(cfg.consum_firewater)ap_bonus+=35;if(cfg.consum_dreamshard)ap_bonus+=20;
+  var mana_pool=1240+(15*final_int)*(1+cfg.tal_ancestral*0.02);
+
+  // Consumables
+  if(cfg.consum_giants)str+=25;
+  if(cfg.consum_roids)str+=25;
+  if(cfg.consum_juju_power)str+=30;
+  if(cfg.consum_mongoose)agi+=25;
+  if(cfg.consum_scorpok)agi+=25;
+
+  // Raid buffs to AP
+  if(cfg.buff_soe)str+=77;
+  if(cfg.buff_goa)agi+=77;
+  if(cfg.buff_might)ap_bonus+=185;
+  if(cfg.buff_bs)ap_bonus+=193;
+  if(cfg.buff_totem_rage)ap_bonus+=50;
+  if(cfg.consum_juju_might)ap_bonus+=40;
+  if(cfg.consum_firewater)ap_bonus+=35;
+  if(cfg.consum_dreamshard)ap_bonus+=20;
+
   var kings_mod=cfg.buff_kings?1.10:1.0;
-  str=(base_str+str)*kings_mod; agi=(base_agi+agi)*kings_mod;
-  var ele_wep_mod=cfg.tal_ele_wep;
-  var total_sp=sp+nature_sp+fire_sp;
-  total_sp+=(cfg.consum_arcane_elixir?150:0)+(cfg.consum_nature_power?20:0)+(cfg.consum_fire_power?20:0)+(cfg.consum_sup_power?150:0)+(cfg.consum_dreamtonic?100:0)+(cfg.consum_zanza?50:0);
-  var final_fire_sp=total_sp+fire_sp, final_nature_sp=total_sp+nature_sp;
-  var total_ap=ap_bonus+str*2+agi;
-  if(cfg.buff_bloodlust)haste+=0.20;
-  var flurry_bonus=[0,0.05,0.10,0.15,0.20,0.25][cfg.tal_flurry];
-  var ft_base_low=112,ft_base_high=128,ft_coeff=0.10+ele_wep_mod*0.04;
+  str=(base_str+str)*kings_mod;
+  agi=(base_agi+agi)*kings_mod;
+
+  // FIX: Armor DR uses player level 60 denominator (matches spreadsheet)
   var effective_armor=cfg.enemy_armor;
   effective_armor-=cfg.debuff_sunder*450;
-  if(cfg.debuff_ff)effective_armor-=175;if(cfg.debuff_cor)effective_armor-=640;
-  if(cfg.debuff_imp_ea)effective_armor-=975;if(cfg.buff_stonebreaker)effective_armor-=450;
-  effective_armor-=arp;effective_armor-=cfg.debuff_tf_stacks*175;
-  if(cfg.item_neretzek)effective_armor-=800;
+  if(cfg.debuff_ff)effective_armor-=175;
+  if(cfg.debuff_cor)effective_armor-=640;
+  if(cfg.debuff_imp_ea)effective_armor-=975;
+  if(cfg.buff_stonebreaker)effective_armor-=450;
+  effective_armor-=arp;
   effective_armor=Math.max(0,effective_armor);
-  var armor_dr=effective_armor/(effective_armor+400+85*63);
+  var armor_dr=effective_armor/(effective_armor+400+85*60); // FIX: player level 60, not 63
   armor_dr=Math.max(0,Math.min(0.75,armor_dr));
   var phys_dmg_mult=1-armor_dr;
-  var base_miss=0.09; var actual_miss=Math.max(0,base_miss-phys_hit);
-  if(cfg.orc_racial)wep_skill+=5; if(cfg.wep_skill_book)wep_skill+=5;
+
+  // FIX: base miss = 10% (not 9%)
+  if(cfg.orc_racial)wep_skill+=5;
+  if(cfg.wep_skill_book)wep_skill+=5;
   wep_skill=Math.min(wep_skill,315);
-  actual_miss=Math.max(0,actual_miss-Math.max(0,wep_skill-300)*0.0004);
+  var base_miss=0.10; // FIX: 10%
+  var actual_miss=Math.max(0,base_miss-phys_hit-Math.max(0,wep_skill-300)*0.0004);
   var dodge_chance=cfg.attacking_behind?0:0.05;
-  var glance_chance=0.40,glance_dmg=0.95;
-  var ts_crit_bonus=cfg.tal_ts*0.01,lotp_crit=cfg.buff_lotp?0.03:0,boomy_crit=cfg.buff_boomy?0.03:0;
+  var glance_chance=0.40;
+  // FIX: glancing damage scales with weapon skill
+  var glance_dmg=Math.min(0.65+(wep_skill-300)*0.02, 0.95);
+
+  // Crit
+  var ts_crit_bonus=cfg.tal_ts*0.01;
+  var lotp_crit=cfg.buff_lotp?0.03:0;
+  var boomy_crit=cfg.buff_boomy?0.03:0;
   var final_crit=Math.max(0,agi/20/100+phys_crit+ts_crit_bonus+lotp_crit+boomy_crit-0.018);
+  if(cfg.consum_elemental_stone)final_crit+=0.02;
+
+  // Spell stats
   var spell_hit_from_grace=cfg.tal_grace*0.02;
   var final_spell_hit=spell_hit+spell_hit_from_grace;
   var spell_miss=Math.max(0,0.17-final_spell_hit);
-  var int_crit_bonus=final_int/59.5/100;
+  var int_crit_bonus=final_int/59.2/100;
   var final_spell_crit=spell_crit+int_crit_bonus+(cfg.buff_boomy?0.03:0)+cfg.tal_ele_dev*0.01*0.95;
-  final_spell_crit=Math.min(0.999,final_spell_crit);
-  var magic_dmg_mult=cfg.debuff_coe?1.10:1.0;
   var fire_crit_bonus=cfg.debuff_imp_scorch?0.15:0;
   var fire_crit=Math.min(0.999,final_spell_crit+fire_crit_bonus);
-  var conc_mult=1+cfg.tal_conc*0.02,cof_mult=1+cfg.tal_cof*0.05;
+  var magic_dmg_mult=cfg.debuff_coe?1.10:1.0;
+  var conc_mult=1+cfg.tal_conc*0.02;
+  var cof_mult=1+cfg.tal_cof*0.05;
   var spell_crit_mult=1.5+cfg.tal_ele_fury*0.20;
+
+  // Spellpower
+  var total_sp=sp+nature_sp+fire_sp;
+  total_sp+=(cfg.consum_arcane_elixir?150:0)+(cfg.consum_nature_power?20:0)
+    +(cfg.consum_fire_power?20:0)+(cfg.consum_sup_power?150:0)
+    +(cfg.consum_dreamtonic?100:0)+(cfg.consum_zanza?50:0);
+  var final_fire_sp=total_sp+fire_sp;
+  var final_nature_sp=total_sp+nature_sp;
+
+  // Total AP
+  var total_ap=ap_bonus+str*2+agi;
+
+  // Haste
+  if(cfg.buff_bloodlust)haste+=0.20;
+  var flurry_bonus=[0,0.05,0.10,0.15,0.20,0.25][cfg.tal_flurry];
+
+  // FIX: Flametongue SP coefficient is weapon-speed dependent (from spreadsheet)
+  var ft_base=29.5*cfg.wep_speed; // FIX: scales with weapon speed
+  var ft_sp_coeff=0.176+((cfg.wep_speed-1.2)/2.8)*0.084; // FIX: speed-dependent
+  ft_sp_coeff*=(1+cfg.tal_ele_wep*0.04/0.176); // Elemental Weapons bonus scales proportionally
+  // Simpler: ele_wep adds flat 0.04 per rank to the coefficient
+  ft_sp_coeff=0.176+((cfg.wep_speed-1.2)/2.8)*0.084+(cfg.tal_ele_wep*0.04);
+
+  // Threat
   var threat_mult=cfg.buff_salvation?0.70:1.0;
-  if(cfg.item_subtlety)threat_mult*=0.98;if(cfg.item_threat_gloves)threat_mult*=1.05;
+  if(cfg.item_subtlety)threat_mult*=0.98;
+  if(cfg.item_threat_gloves)threat_mult*=1.05;
+
+  // WF enabled
   var has_windfury=(cfg.self_imbue==='windfury')||cfg.buff_wf_totem;
   var shock_cd_base=6.0-cfg.tal_reverb*0.1;
-  var ss_cd=6.0-cfg.tal_iss*1.0;
+  var ss_cd=cfg.set_t35_5pc?7.5:8.0; // T3.5 5pc reduces SS CD
   var ele_foc=cfg.tal_ele_foc===1;
+
+  // Mana regen
   var mp5_val=cfg.mp5;
-  if(cfg.buff_wisdom)mp5_val+=39;if(cfg.consum_mageblood)mp5_val+=8;if(cfg.consum_dreamshard)mp5_val+=5;
+  if(cfg.buff_wisdom)mp5_val+=39;
+  if(cfg.consum_mageblood)mp5_val+=8;
+  if(cfg.consum_dreamshard)mp5_val+=5;
   var mp2=mp5_val*2/5;
-  var t=0,sim_duration=cfg.sim_time,mana=mana_pool;
+
+  // Lightning Shield (T3.5 3pc gives enhanced LS that procs on hits)
+  var ls_rank6_base=198;
+  var ls_sp_coeff=0.267;
+  var ls_nat_sp_coeff=0.05;
+
+  // Combat state
+  var t=0, sim_duration=cfg.sim_time, mana=mana_pool;
   var cd={ss:0,shock:0,em:180,slayer:0,spider:0,earthstrike:0,jom:0};
   var mana_pots_used=0,tea_used=0,rune_used=0;
-  var next_swing=0,flurry_charges=0,flurry_active=false;
+  var next_swing=0, flurry_charges=0, flurry_active=false;
   var em_active=false,em_end=0;
-  var slayer_active=false,slayer_end=0,spider_active=false,spider_end=0,earthstrike_active=false,earthstrike_end=0;
+  var slayer_active=false,slayer_end=0;
+  var spider_active=false,spider_end=0;
+  var earthstrike_active=false,earthstrike_end=0;
   var jom_stacks=0,jom_start=0;
-  var t3_4pc_end=0,wf_cooldown=0;
+  var t3_4pc_end=0, wf_cooldown=0;
   var clearcasting=false;
-  var results={total_dmg:0,total_tps:0,by_source:{},num_swings:0,num_wf:0,num_ss:0,num_shock:0,num_crit:0};
+  var results={total_dmg:0,total_tps:0,by_source:{},num_swings:0,num_wf:0,num_ss:0,num_shock:0};
+
   function addDmg(src,dmg,is_spell,crit){
     if(!results.by_source[src])results.by_source[src]={dmg:0,count:0,crits:0};
-    results.by_source[src].dmg+=dmg;results.by_source[src].count++;
+    results.by_source[src].dmg+=dmg;
+    results.by_source[src].count++;
     if(crit)results.by_source[src].crits++;
     results.total_dmg+=dmg;
-    var thr=dmg;if(is_spell)thr*=(1-cfg.tal_calm*0.10);if(cfg.tal_tot_align&&is_spell)thr*=0.75;
+    var thr=dmg;
+    if(is_spell)thr*=(1-cfg.tal_calm*0.10);
+    if(cfg.tal_tot_align&&is_spell)thr*=0.75;
     results.total_tps+=thr*threat_mult;
   }
-  var gcd=1.5,next_gcd=0,step=0.02;
+
+  var gcd=1.5, next_gcd=0, step=0.02;
+
   for(t=0;t<=sim_duration;t+=step){
+    // Mana regen every 2s
     if((t%2)<step)mana=Math.min(mana_pool,mana+mp2);
+
+    // Mana consumables
     if(mana<mana_pool*0.35&&mana_pots_used<cfg.num_mana_pots){mana=Math.min(mana_pool,mana+rng.range(1350,2250));mana_pots_used++;}
     if(mana<mana_pool*0.50&&tea_used<cfg.num_tea){mana=Math.min(mana_pool,mana+1140);tea_used++;}
     if(mana<mana_pool*0.60&&rune_used<cfg.num_rune){mana=Math.min(mana_pool,mana+1500);rune_used++;}
+
+    // Buff tracking
     if(slayer_active&&t>slayer_end)slayer_active=false;
     if(spider_active&&t>spider_end)spider_active=false;
     if(earthstrike_active&&t>earthstrike_end)earthstrike_active=false;
     if(em_active&&t>em_end)em_active=false;
+
+    // Proc/set bonuses
     var forgotten_order_ap=cfg.set_t35_3pc?(cfg.wep_speed>=3.5?160:80)*0.42:0;
     var t35_5pc_mult=cfg.set_t35_5pc?1.05:1.0;
     var t3_4pc_active=cfg.set_t3_4pc&&t<t3_4pc_end;
     var t3_2pc_bonus=cfg.set_t3_2pc?0.05:0;
-    var active_ap=total_ap+forgotten_order_ap+(slayer_active?260:0)+(earthstrike_active?280:0)+(jom_stacks>0&&cfg.trinket_jomgabbar?jom_stacks*25:0)+(t3_4pc_active?30:0);
-    if(cfg.trinket_jomgabbar&&jom_stacks>0&&(t-jom_start)<20)jom_stacks=Math.min(20,Math.floor((t-jom_start)));
+
+    var active_ap=total_ap+forgotten_order_ap
+      +(slayer_active?260:0)+(earthstrike_active?280:0)
+      +(jom_stacks>0&&cfg.trinket_jomgabbar?jom_stacks*25:0)
+      +(t3_4pc_active?30:0);
+    if(cfg.trinket_jomgabbar&&jom_stacks>0&&(t-jom_start)<20)
+      jom_stacks=Math.min(20,Math.floor((t-jom_start)));
+
     var active_haste=haste+(spider_active?0.20:0);
     var swing_speed_cur=cfg.wep_speed/(1+active_haste);
+    if(flurry_active&&flurry_charges>0)swing_speed_cur/=(1+flurry_bonus);
+
+    // ===================== WHITE SWINGS =====================
     if(t>=next_swing){
       results.num_swings++;
-      var miss=rng.roll(actual_miss),dodge_r=!miss&&!cfg.attacking_behind&&rng.roll(dodge_chance);
+      var miss=rng.roll(actual_miss);
+      var dodge_r=!miss&&!cfg.attacking_behind&&rng.roll(dodge_chance);
+
       if(!miss&&!dodge_r){
-        var is_glance=rng.roll(glance_chance),is_crit=!is_glance&&rng.roll(final_crit);
+        var is_glance=rng.roll(glance_chance);
+        var is_crit=!is_glance&&rng.roll(final_crit);
         var bdmg=rng.range(cfg.wep_min,cfg.wep_max)+active_ap/14*cfg.wep_speed;
         bdmg*=phys_dmg_mult;
-        if(is_glance)bdmg*=glance_dmg;else if(is_crit){bdmg*=2;results.num_crit++;}
+        if(is_glance)bdmg*=glance_dmg; // FIX: uses skill-scaled glance damage
+        else if(is_crit)bdmg*=2;
         addDmg('White',bdmg,false,is_crit);
+
+        // Flurry
         if(is_crit&&flurry_bonus>0){flurry_charges=3;flurry_active=true;}
         if(flurry_active&&flurry_charges>0){flurry_charges--;if(flurry_charges===0)flurry_active=false;}
+
+        // JoW mana
         if(cfg.debuff_jow&&rng.roll(0.50))mana=Math.min(mana_pool,mana+65);
+
+        // WINDFURY
         if(has_windfury&&t>=wf_cooldown&&rng.roll(0.20+t3_2pc_bonus)){
-          wf_cooldown=t+3.0;results.num_wf++;
-          for(var w=0;w<2;w++){if(!rng.roll(actual_miss)){var wc=rng.roll(final_crit);var wd=rng.range(cfg.wep_min,cfg.wep_max)+(active_ap+315)/14*cfg.wep_speed;wd*=phys_dmg_mult;if(wc)wd*=2;addDmg('Windfury',wd,false,wc);if(cfg.debuff_jow&&rng.roll(0.50))mana=Math.min(mana_pool,mana+65);}}
+          wf_cooldown=t+3.0;
+          results.num_wf++;
+          for(var w=0;w<2;w++){
+            if(!rng.roll(actual_miss)){
+              var wc=rng.roll(final_crit);
+              // FIX: WF bonus AP = 323 (from spreadsheet)
+              var wd=rng.range(cfg.wep_min,cfg.wep_max)+(active_ap+323)/14*cfg.wep_speed;
+              wd*=phys_dmg_mult;
+              if(wc)wd*=2;
+              addDmg('Windfury',wd,false,wc);
+              if(cfg.debuff_jow&&rng.roll(0.50))mana=Math.min(mana_pool,mana+65);
+              // WF also procs Lightning Shield
+              if(cfg.self_imbue==='windfury'||cfg.buff_wf_totem){
+                if(rng.roll(0.3)){
+                  var lsd=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+                  if(!rng.roll(spell_miss)){var lsc=rng.roll(final_spell_crit);if(lsc)lsd*=spell_crit_mult;addDmg('Lightning Shield',lsd,true,lsc);}
+                }
+              }
+            }
+          }
         }
-        if(cfg.self_imbue==='flametongue'&&!rng.roll(spell_miss)){var fc=rng.roll(fire_crit);var fd=(rng.range(ft_base_low,ft_base_high)+total_sp*ft_coeff)*magic_dmg_mult*cof_mult;if(fc)fd*=spell_crit_mult;addDmg('Flametongue',fd,true,fc);}
-        if(cfg.self_imbue==='rockbiter'){var rb=(238+active_ap*0.25)*phys_dmg_mult;if(cfg.set_t25_5pc)rb*=1.25;addDmg('Rockbiter',rb,false,false);}
-        if(cfg.trinket_hoj&&rng.roll(0.02)){var hd=rng.range(cfg.wep_min,cfg.wep_max)+active_ap/14*cfg.wep_speed;hd*=phys_dmg_mult;addDmg('HoJ Proc',hd,false,false);}
-        if(cfg.trinket_shieldrender&&rng.roll(0.127)){addDmg('Shieldrender',250*phys_dmg_mult,false,false);}
-        if(cfg.item_neretzek&&rng.roll(0.05)){addDmg('Neretzek',300*phys_dmg_mult,false,false);}
-        if(cfg.item_sulfuras&&rng.roll(0.10)){addDmg('Sulfuras',rng.range(75,125)*magic_dmg_mult,true,false);}
-        if(cfg.item_dtc&&rng.roll(0.05)){addDmg('DTC',300,true,false);}
+
+        // FLAMETONGUE per swing
+        if(cfg.self_imbue==='flametongue'){
+          if(!rng.roll(spell_miss)){
+            var fc=rng.roll(fire_crit);
+            // FIX: base = 29.5 * speed, sp coeff is speed-dependent
+            var fd=(ft_base+final_fire_sp*ft_sp_coeff)*(1+cfg.tal_ele_wep*0.04)*magic_dmg_mult*cof_mult;
+            if(clearcasting){fd*=1.10;clearcasting=false;}
+            if(fc)fd*=spell_crit_mult;
+            addDmg('Flametongue',fd,true,fc);
+          }
+        }
+
+        // ROCKBITER per swing
+        if(cfg.self_imbue==='rockbiter'){
+          var rb=(238+active_ap*0.25)*phys_dmg_mult;
+          if(cfg.set_t25_5pc)rb*=1.25;
+          addDmg('Rockbiter',rb,false,false);
+        }
+
+        // Lightning Shield proc on auto attacks (T3.5 system)
+        if(cfg.set_t35_3pc&&rng.roll(0.15)){
+          if(!rng.roll(spell_miss)){
+            var lsd2=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+            var lsc2=rng.roll(final_spell_crit);
+            if(lsc2)lsd2*=spell_crit_mult;
+            addDmg('Lightning Shield',lsd2,true,lsc2);
+          }
+        }
+
+        // Trinket procs
+        if(cfg.trinket_hoj&&rng.roll(0.02)){
+          var hd=rng.range(cfg.wep_min,cfg.wep_max)+active_ap/14*cfg.wep_speed;
+          hd*=phys_dmg_mult;addDmg('HoJ Proc',hd,false,false);
+        }
+        if(cfg.trinket_shieldrender&&rng.roll(0.127))addDmg('Shieldrender',250*phys_dmg_mult,false,false);
+        if(cfg.item_neretzek&&rng.roll(0.05))addDmg('Neretzek',300*phys_dmg_mult,false,false);
+        if(cfg.item_sulfuras&&rng.roll(0.10))addDmg('Sulfuras',rng.range(75,125)*magic_dmg_mult,true,false);
+        if(cfg.item_dtc&&rng.roll(0.05))addDmg('DTC',300,true,false);
       }
-      var fsmod=(flurry_active&&flurry_charges>0)?(1+flurry_bonus):1.0;
-      next_swing=t+swing_speed_cur/fsmod;
+      next_swing=t+swing_speed_cur;
     }
+
+    // ===================== GCD ABILITIES =====================
     if(t>=next_gcd){
-      if(t<2){if(cfg.trinket_slayer&&t>=cd.slayer){slayer_active=true;slayer_end=t+20;cd.slayer=t+120;}if(cfg.trinket_earthstrike&&t>=cd.earthstrike){earthstrike_active=true;earthstrike_end=t+20;cd.earthstrike=t+120;}if(cfg.trinket_jomgabbar&&t>=cd.jom){jom_stacks=1;jom_start=t;cd.jom=t+120;}}
-      if(t>30){if(cfg.trinket_slayer&&t>=cd.slayer){slayer_active=true;slayer_end=t+20;cd.slayer=t+120;}if(cfg.trinket_earthstrike&&t>=cd.earthstrike){earthstrike_active=true;earthstrike_end=t+20;cd.earthstrike=t+120;}if(cfg.trinket_jomgabbar&&t>=cd.jom){jom_stacks=1;jom_start=t;cd.jom=t+120;}}
-      var used=false;
-      if(cfg.use_ss&&t>=cd.ss){
-        var ssmiss=rng.roll(actual_miss);
-        if(!ssmiss){var ssc=rng.roll(final_crit*1.5);var ssd=rng.range(cfg.wep_min,cfg.wep_max)+active_ap/14*cfg.wep_speed;ssd*=phys_dmg_mult*t35_5pc_mult;if(ssc)ssd*=2;addDmg('Stormstrike',ssd,false,ssc);results.num_ss++;if(cfg.set_t3_4pc)t3_4pc_end=t+10;}
-        cd.ss=t+ss_cd;next_gcd=t+gcd;used=true;
+      // Trinket on-use openers
+      if(t<2||t>30){
+        if(cfg.trinket_slayer&&t>=cd.slayer){slayer_active=true;slayer_end=t+20;cd.slayer=t+120;}
+        if(cfg.trinket_earthstrike&&t>=cd.earthstrike){earthstrike_active=true;earthstrike_end=t+20;cd.earthstrike=t+120;}
+        if(cfg.trinket_jomgabbar&&t>=cd.jom){jom_stacks=1;jom_start=t;cd.jom=t+120;}
       }
+
+      var used=false;
+
+      // STORMSTRIKE
+      if(cfg.use_ss&&t>=cd.ss){
+        var ss_miss=rng.roll(actual_miss);
+        if(!ss_miss){
+          var ssc=rng.roll(final_crit);
+          // FIX: SS base = weapon_dmg * 1.01 (from spreadsheet)
+          var ssd=rng.range(cfg.wep_min,cfg.wep_max)*1.01+active_ap/14*cfg.wep_speed;
+          ssd*=phys_dmg_mult*t35_5pc_mult;
+          if(ssc)ssd*=2;
+          addDmg('Stormstrike',ssd,false,ssc);
+          results.num_ss++;
+          if(cfg.set_t3_4pc)t3_4pc_end=t+10;
+          // SS also procs LS
+          if(cfg.set_t35_3pc&&rng.roll(0.15)){
+            if(!rng.roll(spell_miss)){
+              var lss=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+              var lssc=rng.roll(final_spell_crit);
+              if(lssc)lss*=spell_crit_mult;
+              addDmg('Lightning Shield',lss,true,lssc);
+            }
+          }
+        }
+        cd.ss=t+ss_cd; next_gcd=t+gcd; used=true;
+      }
+
+      // SHOCK
       if(!used&&t>=cd.shock&&cfg.shock_priority!=='none'){
-        var sm=300*(1-cfg.tal_conv*0.02);
-        if(mana>=sm){
-          mana=Math.max(0,mana-sm);
+        var shock_mana=300*(1-cfg.tal_conv*0.02);
+        if(mana>=shock_mana){
+          mana=Math.max(0,mana-shock_mana);
           if(!rng.roll(spell_miss)){
             if(cfg.shock_priority==='earth'){
-              var esb=535,esd=(esb+final_nature_sp*0.386)*conc_mult*magic_dmg_mult;
+              // FIX: Earth Shock rank 6: base 492-520 AFTER Concussion 5
+              var es_base=rng.range(492,520);
+              var esd=(es_base+final_nature_sp*0.386)*magic_dmg_mult*cof_mult;
               if(clearcasting){esd*=1.10;clearcasting=false;}
-              var esc=rng.roll(em_active?1.0:final_spell_crit);if(em_active)em_active=false;
-              if(esc)esd*=spell_crit_mult;addDmg('Earth Shock',esd,true,esc);results.num_shock++;
+              var esc=rng.roll(em_active?1.0:final_spell_crit);
+              if(em_active)em_active=false;
+              if(esc)esd*=spell_crit_mult;
+              addDmg('Earth Shock',esd,true,esc);
+              results.num_shock++;
               if(ele_foc&&esc)clearcasting=true;
-            }else{
-              var fsid=225,fsdd=280;
-              var fsia=(fsid+final_fire_sp*0.214)*cof_mult*magic_dmg_mult;
-              if(clearcasting){fsia*=1.10;clearcasting=false;}
-              var fsic=rng.roll(em_active?1.0:fire_crit);if(em_active)em_active=false;
-              if(fsic)fsia*=spell_crit_mult;addDmg('Flame Shock',fsia,true,fsic);results.num_shock++;
-              for(var tk=0;tk<7;tk++){var td=(40+final_fire_sp*0.214/7)*cof_mult*magic_dmg_mult;addDmg('Flame Shock DoT',td,true,false);}
+            } else {
+              // FIX: Flame Shock rank 6: initial 293, dot 82/tick x7
+              var fs_init=293+final_fire_sp*0.214+final_nature_sp*0.0;
+              fs_init*=(1+cfg.tal_conc*0.02)*magic_dmg_mult*cof_mult;
+              if(clearcasting){fs_init*=1.10;clearcasting=false;}
+              var fsic=rng.roll(em_active?1.0:fire_crit);
+              if(em_active)em_active=false;
+              if(fsic)fs_init*=spell_crit_mult;
+              addDmg('Flame Shock',fs_init,true,fsic);
+              // FIX: DoT = 82 per tick x7 ticks (rank 6)
+              for(var tk=0;tk<7;tk++){
+                var td=(82+final_fire_sp*0.1)*magic_dmg_mult*cof_mult;
+                addDmg('Flame Shock DoT',td,true,false);
+              }
+              results.num_shock++;
               if(ele_foc&&fsic)clearcasting=true;
             }
           }
-          cd.shock=t+shock_cd_base;next_gcd=t+gcd;used=true;
+          cd.shock=t+shock_cd_base; next_gcd=t+gcd; used=true;
         }
       }
+
       if(!used)next_gcd=t+0.5;
     }
-    if(cfg.self_fire_totem==='nova_searing'&&(t%2.3)<step){
-      if(!rng.roll(spell_miss)){var stc=rng.roll(fire_crit);var std=(50+final_fire_sp*0.133)*cof_mult*magic_dmg_mult;if(stc)std*=spell_crit_mult;addDmg('Searing Totem',std,true,stc);}
-    }else if(cfg.self_fire_totem==='magma'&&(t%2.0)<step){
-      if(!rng.roll(spell_miss)){var mtc=rng.roll(fire_crit);var mtd=(83+final_fire_sp*0.167)*cof_mult*magic_dmg_mult*(1+cfg.tal_imp_fire_tot*0.10);if(mtc)mtd*=spell_crit_mult;addDmg('Magma Totem',mtd,true,mtc);}
+
+    // ===================== TOTEMS (continuous) =====================
+    // FIX: Searing Totem interval = 2.2*(1-imp_fire*0.1)+0.1
+    var searing_interval=2.2*(1-cfg.tal_imp_fire_tot*0.1)+0.1;
+    if(cfg.self_fire_totem==='nova_searing'&&(t%searing_interval)<step){
+      if(!rng.roll(spell_miss)){
+        var stc=rng.roll(fire_crit);
+        // FIX: Searing Totem range 40-54
+        var std=(rng.range(40,54)+final_fire_sp*0.167)*magic_dmg_mult*cof_mult*(1+cfg.tal_imp_fire_tot*0.05);
+        if(stc)std*=spell_crit_mult;
+        addDmg('Searing Totem',std,true,stc);
+      }
+    } else if(cfg.self_fire_totem==='magma'&&(t%2.0)<step){
+      if(!rng.roll(spell_miss)){
+        var mtc=rng.roll(fire_crit);
+        var mtd=(rng.range(75,75)+final_fire_sp*0.167)*magic_dmg_mult*cof_mult*(1+cfg.tal_imp_fire_tot*0.10);
+        if(mtc)mtd*=spell_crit_mult;
+        addDmg('Magma Totem',mtd,true,mtc);
+      }
     }
   }
-  return {dps:results.total_dmg/sim_duration,tps:results.total_tps/sim_duration,mana_remaining:mana/mana_pool,mana_pool,by_source:results.by_source,num_swings:results.num_swings,num_wf:results.num_wf,num_ss:results.num_ss,num_shock:results.num_shock};
+
+  return {
+    dps:results.total_dmg/sim_duration,
+    tps:results.total_tps/sim_duration,
+    mana_remaining:mana/mana_pool,
+    mana_pool,
+    by_source:results.by_source,
+    num_swings:results.num_swings,
+    num_wf:results.num_wf,
+    num_ss:results.num_ss,
+    num_shock:results.num_shock
+  };
 }
+
 
 function runSimulation() {
   var cfg = getConfig();
