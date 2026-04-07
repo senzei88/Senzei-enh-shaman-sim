@@ -2285,22 +2285,36 @@ async function runArmoryImport() {
     var uniqueFoundItems = extractItemsFromHtml(doc, htmlText);
     if (uniqueFoundItems.length === 0) throw new Error('No items found. Character may be naked or profile is private.');
 
-    // ── STEP 2: Fetch real stats from turtlecraft DB for each known item ──
-    // Only fetch items that are in our ARMORY_ITEM_ID_MAP (i.e. enh shaman gear)
-    var knownItems = uniqueFoundItems.filter(e => ARMORY_ITEM_ID_MAP[e.itemId]);
-    status.innerHTML = '⚡ Step 2/3: Fetching live stats for ' + knownItems.length + ' items from turtlecraft.gg...';
+    // ── STEP 2: Fetch live stats for ALL items from turtlecraft DB ──────────
+    // For known items: update stats. For unknown items: discover name + slot + stats.
+    var SKIP_IDS = new Set([5976, 17107]); // shirt, tabard, non-gear
+    var fetchableItems = uniqueFoundItems.filter(e => !SKIP_IDS.has(e.itemId));
+    status.innerHTML = '⚡ Step 2/3: Fetching live stats for ' + fetchableItems.length + ' items...';
 
     var fetchResults = {};
     var fetchCount = 0;
-    for (var entry of knownItems) {
+    var autoDiscovered = 0;
+
+    for (var entry of fetchableItems) {
       var liveData = await fetchItemFromDB(entry.itemId);
       if (liveData) {
         fetchResults[entry.itemId] = liveData;
         fetchCount++;
-        // Inject into GEAR_DB so it gets used by applyImportData
+
+        // Auto-map items not in our ID map using the slot from the DB page
+        if (!ARMORY_ITEM_ID_MAP[entry.itemId] && liveData.slot && liveData.name) {
+          var validSlots = ['Head','Neck','Shoulders','Back','Chest','Wrist','Hands',
+                           'Waist','Legs','Feet','Ring 1','Trinket 1','Main Hand','Off Hand','Ranged'];
+          if (validSlots.includes(liveData.slot)) {
+            ARMORY_ITEM_ID_MAP[entry.itemId] = [liveData.slot, liveData.name];
+            autoDiscovered++;
+          }
+        }
+
         injectLiveItemIntoGearDB(entry.itemId, liveData);
       }
-      status.innerHTML = '⚡ Step 2/3: Fetching live stats... ' + fetchCount + '/' + knownItems.length;
+      status.innerHTML = '⚡ Step 2/3: Fetching live stats... ' + fetchCount + '/' + fetchableItems.length
+        + (autoDiscovered > 0 ? ' (+' + autoDiscovered + ' new)' : '');
     }
 
     // ── STEP 3: Apply to char sheet ───────────────────────────
@@ -2309,20 +2323,24 @@ async function runArmoryImport() {
 
     var classWarn = (classId!==0&&classId!==7) ? '<br><span style="color:#ff9800;">⚠️ Not a Shaman (class '+classId+')</span>' : '';
     var matchColor = matchResults.matched > 0 ? '#4caf50' : '#f44336';
-    var liveNote = fetchCount > 0 ? '<br><span style="font-size:0.8em;color:#4caf50;">⚡ Live stats fetched for ' + fetchCount + ' items from turtlecraft.gg</span>' : '';
+    var liveNote = fetchCount > 0 ? '<br><span style="font-size:0.8em;color:#4caf50;">⚡ Live stats fetched for ' + fetchCount + ' items'
+      + (autoDiscovered > 0 ? ' · ' + autoDiscovered + ' new items auto-discovered' : '')
+      + '</span>' : '';
 
     status.innerHTML = '🔍 Found ' + uniqueFoundItems.length + ' item IDs. '
       + '<span style="color:' + matchColor + '">'
       + (matchResults.matched>0 ? '✅ Imported '+matchResults.matched+' items.' : '❌ No items matched.')
       + '</span>' + liveNote + classWarn;
 
-    // Debug panel — green = matched+live, yellow = matched static, grey = unknown
+    // Debug panel — ⚡green=live, 🟡yellow=static, 🔵blue=auto-discovered, grey=unknown/skipped
     var foundIdsHtml = uniqueFoundItems.map(e => {
       var known = ARMORY_ITEM_ID_MAP[e.itemId];
       var hasLive = !!fetchResults[e.itemId];
+      var isNew = hasLive && autoDiscovered > 0 && fetchResults[e.itemId]._autoDiscovered;
       var color = !known ? '#555' : hasLive ? '#4caf50' : '#ff9800';
-      var label = !known ? '(not in DB)' : (hasLive ? '⚡ ' : '') + known[1];
-      return '<span style="color:'+color+';font-size:0.75rem;">'+e.itemId+': '+label+'</span>';
+      var icon = !known ? '' : hasLive ? '⚡ ' : '📦 ';
+      var label = !known ? '(skipped)' : (known[1]);
+      return '<span style="color:'+color+';font-size:0.75rem;">'+icon+e.itemId+': '+label+'</span>';
     }).join('<br>');
 
     result.innerHTML = '<div class="armory-result-box">'
@@ -2461,6 +2479,8 @@ var ARMORY_ITEM_ID_MAP = {
   19325:["Waist","Cloverlink Belt"],
   55357:["Waist","Sash of the Grand Betrayal"],
   216160:["Waist","Earthshatter Girdle"],
+  // CHEST (continued)
+  47127:["Chest","Savage Gladiator Chain"],
   // LEGS
   19143:["Legs","Earthfury Leggings"], 16834:["Legs","Earthfury Leggings"],
   19169:["Legs","Legguards of the Chromatic Defier"],
@@ -2529,33 +2549,59 @@ function applyImportData(importedItems, race, charName) {
   var matched = 0;
   var raceSel = document.getElementById('race');
   if (raceSel && race) raceSel.value = race;
-  // Clear gear
   GEAR_SEL = {}; ENCHANT_SEL = {};
   var ring1Used = false, ring2Used = false, t1Used = false, t2Used = false;
+
   importedItems.forEach(entry => {
     var known = ARMORY_ITEM_ID_MAP[entry.itemId];
     if (!known) return;
     var baseSlot = known[0], itemName = known[1], slotToAssign = baseSlot;
-    if (baseSlot === 'Ring 1') { if(!ring1Used){slotToAssign='Ring 1';ring1Used=true;} else if(!ring2Used){slotToAssign='Ring 2';ring2Used=true;} else return; }
-    else if (baseSlot === 'Trinket 1') { if(!t1Used){slotToAssign='Trinket 1';t1Used=true;} else if(!t2Used){slotToAssign='Trinket 2';t2Used=true;} else return; }
-    else if (baseSlot === 'Ranged' || baseSlot === 'Off Hand') { slotToAssign = baseSlot; }
-    // Verify name exists in our DB for this slot
-    var slotItems = GEAR_DB[slotToAssign] || [];
-    if (slotItems.find(i => i.name === itemName)) {
+
+    if (baseSlot === 'Ring 1') {
+      if (!ring1Used) { slotToAssign = 'Ring 1'; ring1Used = true; }
+      else if (!ring2Used) { slotToAssign = 'Ring 2'; ring2Used = true; }
+      else return;
+    } else if (baseSlot === 'Trinket 1') {
+      if (!t1Used) { slotToAssign = 'Trinket 1'; t1Used = true; }
+      else if (!t2Used) { slotToAssign = 'Trinket 2'; t2Used = true; }
+      else return;
+    } else if (baseSlot === 'Ranged' || baseSlot === 'Off Hand') {
+      slotToAssign = baseSlot;
+    }
+
+    // Accept the item if it's in our DB OR if it was live-fetched (has _live flag)
+    if (!GEAR_DB[slotToAssign]) GEAR_DB[slotToAssign] = [];
+    var slotItems = GEAR_DB[slotToAssign];
+    var existing = slotItems.find(i => i.name === itemName);
+
+    if (existing || slotItems.some(i => i._live && i.name === itemName)) {
+      // Already in DB (static or live-injected)
       GEAR_SEL[slotToAssign] = itemName;
       matched++;
+    } else if (LIVE_ITEM_CACHE[entry.itemId]) {
+      // Live data was fetched but inject may have used a slightly different name
+      var live = LIVE_ITEM_CACHE[entry.itemId];
+      var liveName = (live.name && live.name.length > 2) ? live.name : itemName;
+      GEAR_SEL[slotToAssign] = liveName;
+      matched++;
+    } else {
+      // No live data and not in static DB — still place it with empty stats
+      // so the slot shows the item name rather than being blank
+      slotItems.push({ name: itemName, stats: {}, _placeholder: true });
+      GEAR_SEL[slotToAssign] = itemName;
+      matched++;
+    }
 
-      // Apply enchant if the armory returned an effectId for this item
-      if (entry.effectId) {
-        var effectSlots = ENCHANT_EFFECT_MAP[entry.effectId];
-        if (effectSlots) {
-          var enchantName = effectSlots[slotToAssign];
-          if (!enchantName && (slotToAssign === 'Ring 2')) enchantName = effectSlots['Ring 2'];
-          if (enchantName) {
-            var slotEnchants = ENCHANT_DB[slotToAssign] || [];
-            if (slotEnchants.find(e => e.name === enchantName)) {
-              ENCHANT_SEL[slotToAssign] = enchantName;
-            }
+    // Apply enchant
+    if (entry.effectId) {
+      var effectSlots = ENCHANT_EFFECT_MAP[entry.effectId];
+      if (effectSlots) {
+        var enchantName = effectSlots[slotToAssign];
+        if (!enchantName && slotToAssign === 'Ring 2') enchantName = effectSlots['Ring 2'];
+        if (enchantName) {
+          var slotEnchants = ENCHANT_DB[slotToAssign] || [];
+          if (slotEnchants.find(e => e.name === enchantName)) {
+            ENCHANT_SEL[slotToAssign] = enchantName;
           }
         }
       }
