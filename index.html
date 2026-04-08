@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Enh Shaman Sim 1.18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -654,7 +657,7 @@ select { cursor: pointer; }
           <div style="margin-top:15px; width:100%;">
             <button onclick="resetGear()" class="btn-mini" style="width:100%; background:#2a2a2a;">Reset Gear</button>
           </div>
-          <div id="dbStatus" style="font-size:0.65rem; color:#666; margin-top:8px; text-align:center;">Loaded (162 items)</div>
+          <div id="dbStatus" style="font-size:0.65rem; color:#666; margin-top:8px; text-align:center;">Loading items...</div>
 
           <!-- WEAPON SLOTS at bottom of middle -->
           <div class="char-bottom" id="charBottomRow"></div>
@@ -672,103 +675,120 @@ select { cursor: pointer; }
         <div class="card-body">
           <div class="buff-grid">
 
-            <div id="grp_consumables_main">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-                <div class="gear-section-title" style="margin:0;">Consumables</div>
-                <small style="font-size:0.75rem;">
-                  <a href="#" onclick="toggleSection('grp_consumables_main',true);return false" style="color:var(--text-muted);text-decoration:none;">All</a>
-                  <span style="color:#444;"> | </span>
-                  <a href="#" onclick="toggleSection('grp_consumables_main',false);return false" style="color:var(--text-muted);text-decoration:none;">None</a>
-                </small>
-              </div>
+            <!-- RAID BUFFS -->
+            <div>
+              <div class="gear-section-title">Raid Buffs — Stats</div>
               <div class="checkbox-grid-1">
-                <label class="custom-checkbox"><input type="checkbox" id="consum_mongoose" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Elixir of the Mongoose (+25 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_giants" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Elixir of Giants (+25 Str)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_firewater" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Winterfall Firewater (+35 AP)</label>
-                <div style="margin-top:8px;font-size:0.8rem;color:#666;">Spell</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_arcane_elixir" checked><span class="checkmark"></span> Arcane Elixir (+150 SP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_nature_power" checked><span class="checkmark"></span> Nature Power (+20 Nature SP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_fire_power" checked><span class="checkmark"></span> Greater Fire Power (+20 Fire SP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_sup_power" checked><span class="checkmark"></span> Supreme Power (+150 SP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamtonic" checked><span class="checkmark"></span> Dreamtonic (+100 SP)</label>
-                <div style="margin-top:8px;font-size:0.8rem;color:#666;">Mana</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_mageblood" checked><span class="checkmark"></span> Mageblood Potion (+8 MP5)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_zanza" checked><span class="checkmark"></span> Zanza (+50 SP / +50 Res)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamshard" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Dreamshard (+20 AP / +5 MP5)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_kings" checked onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Blessing of Kings (+10% all stats)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_motw" checked><span class="checkmark"></span> Mark of the Wild (+16 all stats, +285 armor)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_fortitude"><span class="checkmark"></span> Power Word: Fortitude (+54 Stamina)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_ai" checked><span class="checkmark"></span> Arcane Brilliance (+31 Intellect)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_divine_spirit"><span class="checkmark"></span> Divine Spirit (+40 Spirit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_bloodpact"><span class="checkmark"></span> Imp Blood Pact (+42 Stamina)</label>
               </div>
-            </div>
 
-            <div id="grp_consumables_special">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-                <div class="gear-section-title" style="margin:0;">Consumables</div>
-                <small style="font-size:0.75rem;">
-                  <a href="#" onclick="toggleSection('grp_consumables_special',true);return false" style="color:var(--text-muted);text-decoration:none;">All</a>
-                  <span style="color:#444;"> | </span>
-                  <a href="#" onclick="toggleSection('grp_consumables_special',false);return false" style="color:var(--text-muted);text-decoration:none;">None</a>
-                </small>
-              </div>
+              <div class="gear-section-title" style="margin-top:14px;">Raid Buffs — Offensive</div>
               <div class="checkbox-grid-1">
-                <div style="font-size:0.8rem;color:#666;">Blasted Lands</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_scorpok" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Scorpok Assay (+25 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_roids" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> R.O.I.D.S (+25 Str)</label>
-                <div style="margin-top:8px;font-size:0.8rem;color:#666;">Jujus</div>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_might" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Juju Might (+40 AP)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_power" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Juju Power (+30 Str)</label>
-                <div style="margin-top:8px;font-size:0.8rem;color:#666;">Mana Items (used in fight)</div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                  <label style="font-size:0.85rem;color:#aaa;white-space:nowrap;">Major Mana Pots:</label>
-                  <div class="select-wrapper" style="width:70px;">
-                    <select id="num_mana_pots" style="padding:6px 8px;font-size:0.85rem;">
-                      <option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
-                    </select>
-                  </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                  <label style="font-size:0.85rem;color:#aaa;white-space:nowrap;">Night Dragon Tea:</label>
-                  <div class="select-wrapper" style="width:70px;">
-                    <select id="num_tea" style="padding:6px 8px;font-size:0.85rem;">
-                      <option value="0">0</option><option value="1">1</option><option value="2" selected>2</option>
-                    </select>
-                  </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <label style="font-size:0.85rem;color:#aaa;white-space:nowrap;">Rune of Power:</label>
-                  <div class="select-wrapper" style="width:70px;">
-                    <select id="num_rune" style="padding:6px 8px;font-size:0.85rem;">
-                      <option value="0" selected>0</option><option value="1">1</option><option value="2">2</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div id="grp_raidbuffs">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-                <div class="gear-section-title" style="margin:0;">Raid Buffs</div>
-                <small style="font-size:0.75rem;">
-                  <a href="#" onclick="toggleSection('grp_raidbuffs',true);return false" style="color:var(--text-muted);text-decoration:none;">All</a>
-                  <span style="color:#444;"> | </span>
-                  <a href="#" onclick="toggleSection('grp_raidbuffs',false);return false" style="color:var(--text-muted);text-decoration:none;">None</a>
-                </small>
-              </div>
-              <div class="checkbox-grid-1">
-                <label class="custom-checkbox"><input type="checkbox" id="buff_motw" checked><span class="checkmark"></span> Mark of the Wild (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_kings" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Blessing of Kings</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_might" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Blessing of Might (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_bs" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Battle Shout (Imp)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_ai" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Arcane Intellect</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_divine_spirit" checked><span class="checkmark"></span> Divine Spirit</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_lotp"><span class="checkmark"></span> Leader of the Pack</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_trueshot"><span class="checkmark"></span> Trueshot Aura</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_boomy"><span class="checkmark"></span> Boomy Aura (+3% Crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_bs" checked onchange="updateGearStats()"><span class="checkmark"></span> Battle Shout — Imp (+290 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_might" checked onchange="updateGearStats()"><span class="checkmark"></span> Blessing of Might — Imp (+222 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_soe" checked onchange="updateGearStats()"><span class="checkmark"></span> Strength of Earth — Enh (+96 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_goa" checked onchange="updateGearStats()"><span class="checkmark"></span> Grace of Air — Imp (+96 Agi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_lotp"><span class="checkmark"></span> Leader of the Pack (+3% Crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_boomy"><span class="checkmark"></span> Moonkin Aura (+3% Spell Crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_trueshot"><span class="checkmark"></span> Trueshot Aura (+5% AP, +55 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_wf_totem"><span class="checkmark"></span> Windfury Totem (external)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_totem_rage"><span class="checkmark"></span> Totem of Rage (+50 AP)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="buff_bloodlust"><span class="checkmark"></span> Bloodlust (+20% Haste)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_salvation" checked><span class="checkmark"></span> Salvation (-30% Threat)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_wisdom" checked><span class="checkmark"></span> Blessing of Wisdom</label>
-                <div style="margin-top:8px;font-size:0.8rem;color:#666;">Totems (from others)</div>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_wf_totem"><span class="checkmark"></span> Windfury Totem</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_soe" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Strength of Earth (+77 Str)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_goa" onchange="updateGearStats();updateWepSkillDisplay()" checked><span class="checkmark"></span> Grace of Air (+77 Agi)</label>
-                <label class="custom-checkbox"><input type="checkbox" id="buff_totem_rage" onchange="updateGearStats();updateWepSkillDisplay()"><span class="checkmark"></span> Totem of Rage (+50 AP)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Raid Buffs — Utility</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="buff_salvation" checked><span class="checkmark"></span> Blessing of Salvation (-30% threat)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_wisdom" checked><span class="checkmark"></span> Blessing of Wisdom (+39 MP5)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="buff_stonebreaker"><span class="checkmark"></span> Stonebreaker Totem (-450 armor)</label>
+              </div>
+            </div>
+
+            <!-- DEBUFFS -->
+            <div>
+              <div class="gear-section-title">Boss Debuffs — Armor</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_ff" checked><span class="checkmark"></span> Faerie Fire (-505 armor)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_cor" checked><span class="checkmark"></span> Curse of Recklessness (-640 armor)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_imp_ea" checked><span class="checkmark"></span> Improved Expose Armor (-2550 armor)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_sunder_cb"><span class="checkmark"></span> Sunder Armor x5 (-2250 armor)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Boss Debuffs — Magic</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_coe" checked><span class="checkmark"></span> Curse of Elements (+10% magic dmg)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_imp_scorch" checked><span class="checkmark"></span> Improved Scorch (+15% fire crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_jow" checked><span class="checkmark"></span> Judgement of Wisdom (mana on hit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="debuff_nightfall"><span class="checkmark"></span> Nightfall (-15% shadow/arcane resist)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Racial / On-Use</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="orc_racial" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Orc Racial (+3 Axe/Mace/etc)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="wep_skill_book" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Weapon Skill Book (+5)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="use_berserking"><span class="checkmark"></span> Berserking — Troll racial</label>
+                <label class="custom-checkbox"><input type="checkbox" id="use_bloodfury"><span class="checkmark"></span> Blood Fury — Orc racial</label>
+                <label class="custom-checkbox"><input type="checkbox" id="use_em"><span class="checkmark"></span> Elemental Mastery (on-use)</label>
+              </div>
+            </div>
+
+            <!-- CONSUMABLES -->
+            <div>
+              <div class="gear-section-title">Flask (1 max)</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="consum_sup_power"><span class="checkmark"></span> Flask of Supreme Power (+150 SP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="flask_titans"><span class="checkmark"></span> Flask of the Titans (+1200 HP)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Elixirs</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="consum_mongoose"><span class="checkmark"></span> Elixir of the Mongoose (+25 Agi, +2% Crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_giants"><span class="checkmark"></span> Elixir of Giants (+25 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_arcane_elixir"><span class="checkmark"></span> Greater Arcane Elixir (+35 SP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_nature_power"><span class="checkmark"></span> Elixir of Greater Nature Power (+20 Nature SP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_fire_power"><span class="checkmark"></span> Elixir of Greater Firepower (+20 Fire SP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_mageblood"><span class="checkmark"></span> Mageblood Potion (+12 MP5)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamshard"><span class="checkmark"></span> Dreamshard Elixir (+15 SP, +2% Spell Crit)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_dreamtonic"><span class="checkmark"></span> Dreamtonic (+35 SP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_firewater"><span class="checkmark"></span> Winterfall Firewater (+35 AP)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Juju &amp; Blasted Lands</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_power"><span class="checkmark"></span> Juju Power (+30 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_might"><span class="checkmark"></span> Juju Might (+40 AP)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_juju_flurry"><span class="checkmark"></span> Juju Flurry (+3% Attack Speed)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_roids"><span class="checkmark"></span> R.O.I.D.S. (+25 Str)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_scorpok"><span class="checkmark"></span> Ground Scorpok Assay (+25 Agi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_cerebral_cortex"><span class="checkmark"></span> Cerebral Cortex Compound (+25 Int)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_crystal_force"><span class="checkmark"></span> Crystal Force (+20 Str)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Food &amp; Other</div>
+              <div class="checkbox-grid-1">
+                <label class="custom-checkbox"><input type="checkbox" id="consum_zanza"><span class="checkmark"></span> Spirit of Zanza (+50 Sta, +50 Spi)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_rumsey"><span class="checkmark"></span> Rumsey Rum Black Label (+15 Sta)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_chimaerok"><span class="checkmark"></span> Dirge's Chimaerok Chops (+25 Sta food)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_dragonbreath"><span class="checkmark"></span> Dragonbreath Chili (fire proc)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="consum_elemental_stone"><span class="checkmark"></span> Elemental Sharpening Stone (+2% Crit)</label>
+              </div>
+
+              <div class="gear-section-title" style="margin-top:14px;">Mana</div>
+              <div class="checkbox-grid-1">
+                <div class="input-group-small"><label>Major Mana Pots</label>
+                  <div class="select-wrapper"><select id="num_mana_pots"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></div>
+                </div>
+                <div class="input-group-small"><label>Demonic/Dark Rune</label>
+                  <div class="select-wrapper"><select id="num_rune"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select></div>
+                </div>
+                <div class="input-group-small"><label>Innervate / Tea</label>
+                  <div class="select-wrapper"><select id="num_tea"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+                </div>
               </div>
             </div>
 
@@ -776,220 +796,7 @@ select { cursor: pointer; }
         </div>
       </div>
 
-      <!-- SETTINGS & CONFIGURATION -->
-      <div class="card full-width">
-        <div class="card-header clickable" onclick="toggleCard(this)">
-          <h2>⚙️ Settings &amp; Configuration</h2>
-          <span class="toggle-icon">▼</span>
-        </div>
-        <div class="card-body">
-          <div class="grid-container">
-
-            <!-- GENERAL -->
-            <div class="card">
-              <div class="card-header"><h2>⚙️ General</h2></div>
-              <div class="card-body">
-                <div class="input-group"><label>Fight Duration (s)</label><input type="number" id="sim_time" value="90"></div>
-                <div class="input-group"><label>Iterations</label><input type="number" id="sim_count" value="5000"></div>
-                <div class="input-group"><label>Simulation Engine</label>
-                  <div class="select-wrapper"><select id="sim_mode"><option value="stochastic" selected>Stochastic (RNG)</option></select></div>
-                </div>
-                <div class="separator"></div>
-                <div class="input-group"><label>Race</label>
-                  <div class="select-wrapper">
-                    <select id="race">
-                      <option value="Orc" selected>Orc</option>
-                      <option value="Troll">Troll</option>
-                      <option value="Tauren">Tauren</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="input-group"><label>Positioning</label>
-                  <div class="select-wrapper">
-                    <select id="attacking_behind_sel">
-                      <option value="1" selected>Behind (no dodge/parry)</option>
-                      <option value="0">Front</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="toggle-wrapper">
-                  <label class="toggle"><input type="checkbox" id="sim_vary" checked><span class="slider"></span><span class="label-text">Vary Fight Duration (±smear)</span></label>
-                </div>
-              </div>
-            </div>
-
-            <!-- PLAYER STATS -->
-            <div class="card">
-              <div class="card-header">
-                <h2>📈 Player Stats</h2>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <label class="toggle" style="transform:scale(0.8);margin:0;"><input type="checkbox" id="manual_stats" onchange="toggleManualStats(this.checked)"><span class="slider"></span></label>
-                  <span style="font-size:0.75rem;color:#888;">Manual</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>Str</label><input type="number" id="stat_str" value="300" disabled></div>
-                    <div class="input-wrapper"><label>Agi</label><input type="number" id="stat_agi" value="207" disabled></div>
-                    <div class="input-wrapper"><label>AP</label><input type="number" id="stat_ap" value="178" disabled></div>
-                  </div>
-                </div>
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>Crit %</label><input type="number" id="stat_crit" value="15" disabled></div>
-                    <div class="input-wrapper"><label>Hit %</label><input type="number" id="stat_hit" value="4" disabled></div>
-                    <div class="input-wrapper"><label>Haste %</label><input type="number" id="stat_haste" value="12.63" disabled></div>
-                  </div>
-                </div>
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>ArP</label><input type="number" id="stat_arp" value="250" disabled></div>
-                    <div class="input-wrapper"><label>Int</label><input type="number" id="stat_int" value="94" disabled></div>
-                    <div class="input-wrapper"><label>MP5</label><input type="number" id="stat_mp5" value="0" disabled></div>
-                  </div>
-                </div>
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>Spellpower</label><input type="number" id="stat_sp" value="0" disabled></div>
-                    <div class="input-wrapper"><label>Nature SP</label><input type="number" id="stat_nature_sp" value="0" disabled></div>
-                    <div class="input-wrapper"><label>Fire SP</label><input type="number" id="stat_fire_sp" value="0" disabled></div>
-                  </div>
-                </div>
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>Spell Crit %</label><input type="number" id="stat_spell_crit" value="0" disabled></div>
-                    <div class="input-wrapper"><label>Spell Hit %</label><input type="number" id="stat_spell_hit" value="0" disabled></div>
-                    <div class="input-wrapper"><label>Wep Skill</label><input type="number" id="stat_wep_skill" value="315" disabled></div>
-                  </div>
-                </div>
-                <div class="separator"></div>
-                <div class="spell-row">
-                  <div class="multi-input">
-                    <div class="input-wrapper"><label>Wep Min</label><input type="number" id="stat_wep_min" value="307"></div>
-                    <div class="input-wrapper"><label>Wep Max</label><input type="number" id="stat_wep_max" value="453"></div>
-                    <div class="input-wrapper"><label>Speed</label><input type="number" id="stat_wep_speed" value="3.8" step="0.1"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- TALENTS -->
-            <div class="card">
-              <div class="card-header"><h2>🌿 Talents</h2></div>
-              <div class="card-body">
-                <p style="font-size:0.8rem;color:#888;margin-bottom:12px;">Key variable talents. Core Enhancement talents assumed maxed.</p>
-                <div class="input-group-small"><label>Ancestral Knowledge (Mana)</label>
-                  <div class="select-wrapper"><select id="tal_ancestral"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option value="5" selected>5</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Totemic Alignment (Threat)</label>
-                  <div class="select-wrapper"><select id="tal_tot_align"><option value="0" selected>0</option><option value="1">1</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Calming Winds (Shock Threat)</label>
-                  <div class="select-wrapper"><select id="tal_calm"><option>0</option><option>1</option><option>2</option><option value="3" selected>3</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Element's Grace (Spell Hit)</label>
-                  <div class="select-wrapper"><select id="tal_grace"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option value="5" selected>5</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Elemental Focus (Clearcasting)</label>
-                  <div class="select-wrapper"><select id="tal_ele_foc"><option value="0">0</option><option value="1" selected>1</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Elemental Fury (+2% Nature Dmg/rank)</label>
-                  <div class="select-wrapper"><select id="tal_ele_fury"><option value="0" selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Imp Fire Totems</label>
-                  <div class="select-wrapper"><select id="tal_imp_fire_tot"><option value="0" selected>0</option><option>1</option><option>2</option></select></div>
-                </div>
-                <div class="input-group-small"><label>Meditation (%)</label>
-                  <div class="select-wrapper"><select id="tal_med"><option value="0" selected>0</option><option>1</option><option>2</option><option>3</option></select></div>
-                </div>
-                <!-- Hidden defaults for engine -->
-                <input type="hidden" id="tal_ts" value="5">
-                <input type="hidden" id="tal_iss" value="2">
-                <input type="hidden" id="tal_flurry" value="5">
-                <input type="hidden" id="tal_enh_tot" value="2">
-                <input type="hidden" id="tal_conc" value="5">
-                <input type="hidden" id="tal_ele_dev" value="3">
-                <input type="hidden" id="tal_ele_wep" value="3">
-                <input type="hidden" id="tal_reverb" value="3">
-                <input type="hidden" id="tal_cof" value="2">
-                <input type="hidden" id="tal_conv" value="2">
-                <input type="hidden" id="tal_spirit_armor" value="0">
-                <input type="hidden" id="tal_sham_focus" value="1">
-                <input type="hidden" id="tal_spirit_weapons" value="1">
-                <input type="hidden" id="tal_imp_mb" value="1">
-              </div>
-            </div>
-
-            <!-- ENEMY -->
-            <div class="card">
-              <div class="card-header"><h2>💀 Enemy</h2></div>
-              <div class="card-body">
-                <div class="input-group"><label>Select Boss (Sets Armor)</label>
-                  <div class="select-wrapper">
-                    <select id="boss_preset" onchange="applyBossPreset()">
-                      <option value="">-- Custom --</option>
-                      <option value="63:4211">Most Bosses (4211)</option>
-                      <option value="63:4611" selected>Naxx Loatheb/Patch (4611)</option>
-                      <option value="63:3850">Naxx Faerlina (3850)</option>
-                      <option value="63:3402">Naxx Gothik/KT (3402)</option>
-                      <option value="63:4311">AQ40 Most (4311)</option>
-                      <option value="63:4786">MC Sulfuron (4786)</option>
-                      <option value="63:3402">ZG Most (3402)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="input-group"><label>Target Level</label>
-                  <div class="select-wrapper">
-                    <select id="enemy_level">
-                      <option value="63" selected>Level 63 (Boss)</option>
-                      <option value="60">Level 60</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="input-group"><label>Base Armor</label><input type="number" id="enemy_armor" value="4611"></div>
-
-                <div class="separator"></div>
-                <div class="gear-section-title">Debuffs (Armor)</div>
-                <div class="input-group"><label>Armor Reduction</label>
-                  <div class="select-wrapper">
-                    <select id="debuff_major_armor">
-                      <option value="">None</option>
-                      <option value="sunder5">Sunder Armor x5 (-2250)</option>
-                      <option value="iea">Imp. Exposed Armor (-2550)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="checkbox-grid-1">
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_ff" checked><span class="checkmark"></span> Faerie Fire (-175)</label>
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_cor" checked><span class="checkmark"></span> Curse of Recklessness (-640)</label>
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_imp_ea" checked><span class="checkmark"></span> Improved Expose Armor (-975)</label>
-                  <label class="custom-checkbox"><input type="checkbox" id="buff_stonebreaker"><span class="checkmark"></span> Stonebreaker Totem (-450)</label>
-                </div>
-                <div class="separator"></div>
-                <div class="gear-section-title">Debuffs (Magic)</div>
-                <div class="checkbox-grid-1">
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_coe" checked><span class="checkmark"></span> Curse of Elements (+10% Magic)</label>
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_imp_scorch" checked><span class="checkmark"></span> Improved Scorch (+15% Fire Crit)</label>
-                  <label class="custom-checkbox"><input type="checkbox" id="debuff_jow" checked><span class="checkmark"></span> Judgement of Wisdom (Mana)</label>
-                </div>
-                <div style="margin-top:12px;">
-                  <div class="enemy-info-box">
-                    <div style="font-size:0.8rem;color:#aaa;margin-bottom:5px;">Armor Damage Reduction</div>
-                    <div class="enemy-bar-container">
-                      <div id="enemyArmorBar" class="enemy-bar-fill" style="width:30%"></div>
-                      <div id="enemyArmorText" class="enemy-bar-text">~30%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div><!-- end grid-container -->
-        </div>
-      </div>
-
-      <!-- ROTATION / SPECIAL SETTINGS -->
+<!-- ROTATION / SPECIAL SETTINGS -->
       <div class="card full-width">
         <div class="card-header clickable" onclick="toggleCard(this)">
           <h2>⚡ Rotation &amp; Special</h2>
@@ -1653,7 +1460,6 @@ function getConfig() {
     attacking_behind: getStr('attacking_behind_sel','1') === '1',
     enemy_level: getVal('enemy_level',63),
     enemy_armor: getVal('enemy_armor',4611),
-    debuff_sunder: getStr('debuff_major_armor','').includes('sunder') ? 5 : 0,
     debuff_ff: getVal('debuff_ff',true),
     debuff_cor: getVal('debuff_cor',true),
     debuff_imp_ea: getVal('debuff_imp_ea',true),
@@ -1723,8 +1529,30 @@ function getConfig() {
     wep_skill_book: getVal('wep_skill_book',true),
     use_berserking: getVal('use_berserking',false),
     tal_sham_focus: getVal('tal_sham_focus', true), // Shamanistic Focus 5/5 (standard build)
-    tal_spirit_weapons: getVal('tal_spirit_weapons', true), // Spirit Weapons 1/1 (standard build)
-    item_thundercall: getVal('item_thundercall', false), // Totem of Thundercall proc
+    tal_spirit_weapons: getVal('tal_spirit_weapons', true),
+    item_thundercall: getVal('item_thundercall', false),
+    // New buffs
+    buff_motw: getVal('buff_motw', true),
+    buff_divine_spirit: getVal('buff_divine_spirit', false),
+    buff_fortitude: getVal('buff_fortitude', false),
+    buff_bloodpact: getVal('buff_bloodpact', false),
+    buff_trueshot: getVal('buff_trueshot', false),
+    // Debuffs
+    debuff_sunder: getVal('debuff_sunder_cb', false) ? 5 : 0,
+    debuff_nightfall: getVal('debuff_nightfall', false),
+    // Consumables
+    consum_juju_flurry: getVal('consum_juju_flurry', false),
+    consum_cerebral_cortex: getVal('consum_cerebral_cortex', false),
+    consum_crystal_force: getVal('consum_crystal_force', false),
+    consum_rumsey: getVal('consum_rumsey', false),
+    consum_chimaerok: getVal('consum_chimaerok', false),
+    consum_dragonbreath: getVal('consum_dragonbreath', false),
+    consum_elemental_stone: getVal('consum_elemental_stone', false),
+    flask_titans: getVal('flask_titans', false),
+    // On-use
+    use_berserking: getVal('use_berserking', false),
+    use_bloodfury: getVal('use_bloodfury', false),
+    use_em: getVal('use_em', false),
     use_bloodfury: getVal('use_bloodfury',false),
   };
 }
@@ -1759,12 +1587,16 @@ function runCoreSim(cfg, seed) {
   var final_int=raw_int;
   var mana_pool=1240+(15*final_int)*(1+cfg.tal_ancestral*0.02);
 
-  // Consumables
+  // Consumables & Buffs — all stat additions before Kings multiplier
+  // Str
   if(cfg.consum_giants)str+=25;
   if(cfg.consum_roids)str+=25;
   if(cfg.consum_juju_power)str+=30;
-  if(cfg.consum_mongoose)agi+=25;
+  if(cfg.consum_crystal_force)str+=20;
+  // Agi
+  if(cfg.consum_mongoose)agi+=25; // also +2% crit added after final_crit calc
   if(cfg.consum_scorpok)agi+=25;
+  // Int (not tracked for DPS but motw/ai affects mana pool)
 
   // Raid buffs to AP
   if(cfg.buff_soe)str+=77;
@@ -1774,15 +1606,22 @@ function runCoreSim(cfg, seed) {
   if(cfg.buff_totem_rage)ap_bonus+=50;
   if(cfg.consum_juju_might)ap_bonus+=40;
   if(cfg.consum_firewater)ap_bonus+=35;
+  if(cfg.consum_juju_flurry)haste+=0.03; // Juju Flurry +3% attack speed
+  if(cfg.consum_chimaerok){}  // +25 Sta, not tracked in DPS
+  if(cfg.consum_rumsey){}     // +15 Sta, not tracked in DPS
+  if(cfg.buff_fortitude){}    // +54 Sta, not tracked in DPS
+  if(cfg.buff_bloodpact){}    // +42 Sta, not tracked in DPS
+  if(cfg.buff_trueshot){ap_bonus+=55; str+=str*0.05;} // +5% AP + 55 flat AP approximated
   if(cfg.consum_dreamshard)ap_bonus+=20;
 
+  if(cfg.buff_motw){str+=16;agi+=16;} // Mark of the Wild (+16 all stats Imp)
   var kings_mod=cfg.buff_kings?1.10:1.0;
   str=(base_str+str)*kings_mod;
   agi=(base_agi+agi)*kings_mod;
 
   // FIX: Armor DR uses player level 60 denominator (matches spreadsheet)
   var effective_armor=cfg.enemy_armor;
-  effective_armor-=cfg.debuff_sunder*450;
+  effective_armor-=(cfg.debuff_sunder||0)*450;
   if(cfg.debuff_ff)effective_armor-=175;
   if(cfg.debuff_cor)effective_armor-=640;
   if(cfg.debuff_imp_ea)effective_armor-=975;
@@ -1808,8 +1647,9 @@ function runCoreSim(cfg, seed) {
   var ts_crit_bonus=cfg.tal_ts*0.01;
   var lotp_crit=cfg.buff_lotp?0.03:0;
   var boomy_crit=cfg.buff_boomy?0.03:0;
-  var final_crit=Math.max(0,0.0225+agi/20/100+phys_crit+ts_crit_bonus+lotp_crit+boomy_crit); // 2.25% base shaman crit
-  if(cfg.consum_elemental_stone)final_crit+=0.02;
+  var final_crit=Math.max(0,0.0225+agi/20/100+phys_crit+ts_crit_bonus+lotp_crit+boomy_crit);
+  if(cfg.consum_mongoose)final_crit+=0.02;        // Mongoose +2% crit
+  if(cfg.consum_elemental_stone)final_crit+=0.02; // Elemental Sharpening Stone +2% crit
 
   // Spell stats
   var spell_hit_from_grace=cfg.tal_grace*0.02;
@@ -1835,10 +1675,15 @@ function runCoreSim(cfg, seed) {
   var final_nature_sp=total_sp+nature_sp;
 
   // Total AP
+  // Trueshot Aura: +5% total AP (applied after base AP calculated)
   var total_ap=ap_bonus+str*2+agi;
+  if(cfg.buff_trueshot)total_ap*=1.05;
 
   // Haste
   if(cfg.buff_bloodlust)haste+=0.20;
+  if(cfg.use_berserking)haste+=0.20*(10.0/90.0); // Berserking: ~20% haste 10s/90s fight avg
+  if(cfg.use_bloodfury)ap_bonus+=ap_bonus*0.25*(15.0/90.0); // Blood Fury: +25% AP 15s avg
+  if(cfg.consum_juju_flurry)haste+=0.03; // Juju Flurry +3% attack speed
   var flurry_bonus=[0,0.05,0.10,0.15,0.20,0.25][cfg.tal_flurry];
 
   // Flametongue: base = 29.5 * speed, SP coeff = speed * 0.13 (from spreadsheet)
@@ -1985,13 +1830,7 @@ function runCoreSim(cfg, seed) {
               if(wc)wd*=2;
               addDmg('Windfury',wd,false,wc);
               if(cfg.debuff_jow&&rng.roll(0.50))mana=Math.min(mana_pool,mana+65);
-              // WF also procs Lightning Shield
-              if(cfg.self_imbue==='windfury'||cfg.buff_wf_totem){
-                if(rng.roll(0.3)){
-                  var lsd=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult*ele_fury_mult;
-                  if(!rng.roll(spell_miss)){var lsc=rng.roll(final_spell_crit);if(lsc)lsd*=spell_crit_mult;addDmg('Lightning Shield',lsd,true,lsc);}
-                }
-              }
+              // WF does not proc Lightning Shield (not observed in combat log)
             }
           }
         }
@@ -2040,8 +1879,10 @@ function runCoreSim(cfg, seed) {
 
     // ===================== GCD ABILITIES =====================
     if(t>=next_gcd){
-      // Trinket on-use openers
+      // Trinket on-use openers + Elemental Mastery
       if(t<2||t>30){
+        // Elemental Mastery: next shock guaranteed crit, 3 min CD
+        if(cfg.use_em&&t>=cd.em){em_active=true;em_end=t+15;cd.em=t+180;}
         if(cfg.trinket_slayer&&t>=cd.slayer){slayer_active=true;slayer_end=t+20;cd.slayer=t+120;}
         if(cfg.trinket_earthstrike&&t>=cd.earthstrike){earthstrike_active=true;earthstrike_end=t+20;cd.earthstrike=t+120;}
         if(cfg.trinket_jomgabbar&&t>=cd.jom){jom_stacks=1;jom_start=t;cd.jom=t+120;}
@@ -2076,7 +1917,7 @@ function runCoreSim(cfg, seed) {
               var emp_crit = rng.roll(final_spell_crit);
               var emp_dmg = (ls_rank6_base + final_nature_sp*ls_nat_sp_coeff) * (1+cfg.tal_ele_dev*0.05) * magic_dmg_mult * cof_mult * consumeSSDebuff() * ele_fury_mult;
               if(emp_crit) emp_dmg *= spell_crit_mult;
-              addDmg('Empowered Lightning Strike',emp_dmg,true,emp_crit);
+              addDmg('Lightning Shield',emp_dmg,true,false); // Globe consumed by LS hit, 0% crit per log
             }
           }
           cd.ls = t + ls_cd;
@@ -2289,7 +2130,7 @@ function finalizeResults(allResults, cfg) {
 let GEAR_DB = {};
 
 let ENCHANT_DB = {};  // loaded from data/enchants.json
-const DATA_VERSION = '1775602749'; // bump when pushing new data files
+const DATA_VERSION = '1775611164' // bump when pushing new data files
 
 let WEAPON_DB = [];
 
@@ -2367,6 +2208,20 @@ async function runArmoryImport() {
   var status = document.getElementById('armoryStatus');
   var result = document.getElementById('armoryResult');
   if (!name) { status.innerHTML = '<span style="color:#f44336">Please enter a character name.</span>'; return; }
+
+  // Wait for gear DB to finish loading if still in progress
+  if (!window.ITEMS_BY_ID || Object.keys(window.ITEMS_BY_ID).length === 0) {
+    status.innerHTML = '⏳ Waiting for item database to load...';
+    await new Promise(resolve => {
+      var check = setInterval(() => {
+        if (window.ITEMS_BY_ID && Object.keys(window.ITEMS_BY_ID).length > 0) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 200);
+      setTimeout(() => { clearInterval(check); resolve(); }, 15000); // 15s timeout
+    });
+  }
 
   status.innerHTML = '⏳ Fetching armory...'; status.style.color = '#aaa';
   result.innerHTML = '';
