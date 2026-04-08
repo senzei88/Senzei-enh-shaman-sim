@@ -1457,7 +1457,6 @@ function getConfig() {
     attacking_behind: getStr('attacking_behind_sel','1') === '1',
     enemy_level: getVal('enemy_level',63),
     enemy_armor: getVal('enemy_armor',4611),
-    // debuff_sunder now from checkbox above,
     debuff_ff: getVal('debuff_ff',true),
     debuff_cor: getVal('debuff_cor',true),
     debuff_imp_ea: getVal('debuff_imp_ea',true),
@@ -2209,6 +2208,20 @@ async function runArmoryImport() {
   var status = document.getElementById('armoryStatus');
   var result = document.getElementById('armoryResult');
   if (!name) { status.innerHTML = '<span style="color:#f44336">Please enter a character name.</span>'; return; }
+
+  // Wait for gear DB to finish loading if still in progress
+  if (!window.ITEMS_BY_ID || Object.keys(window.ITEMS_BY_ID).length === 0) {
+    status.innerHTML = '⏳ Waiting for item database to load...';
+    await new Promise(resolve => {
+      var check = setInterval(() => {
+        if (window.ITEMS_BY_ID && Object.keys(window.ITEMS_BY_ID).length > 0) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 200);
+      setTimeout(() => { clearInterval(check); resolve(); }, 15000); // 15s timeout
+    });
+  }
 
   status.innerHTML = '⏳ Fetching armory...'; status.style.color = '#aaa';
   result.innerHTML = '';
