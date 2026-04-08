@@ -894,7 +894,7 @@ select { cursor: pointer; }
                 <div class="input-group-small"><label>Elemental Focus (Clearcasting)</label>
                   <div class="select-wrapper"><select id="tal_ele_foc"><option value="0">0</option><option value="1" selected>1</option></select></div>
                 </div>
-                <div class="input-group-small"><label>Elemental Fury (Spell Crit Dmg)</label>
+                <div class="input-group-small"><label>Elemental Fury (+2% Nature Dmg/rank)</label>
                   <div class="select-wrapper"><select id="tal_ele_fury"><option value="0" selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
                 </div>
                 <div class="input-group-small"><label>Imp Fire Totems</label>
@@ -915,6 +915,8 @@ select { cursor: pointer; }
                 <input type="hidden" id="tal_cof" value="2">
                 <input type="hidden" id="tal_conv" value="2">
                 <input type="hidden" id="tal_spirit_armor" value="0">
+                <input type="hidden" id="tal_sham_focus" value="1">
+                <input type="hidden" id="tal_spirit_weapons" value="1">
                 <input type="hidden" id="tal_imp_mb" value="1">
               </div>
             </div>
@@ -1035,7 +1037,7 @@ select { cursor: pointer; }
             <div>
               <div class="gear-section-title">Set Bonuses</div>
               <div class="checkbox-grid-1">
-                <label class="custom-checkbox"><input type="checkbox" id="set_t3_2pc" checked><span class="checkmark"></span> T3 2pc (+5% WF hit chance)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="set_t3_2pc" checked><span class="checkmark"></span> T2/T3 3pc (SS+LS CD -0.5s)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="set_t3_4pc"><span class="checkmark"></span> T3 4pc (+30 AP after Stormstrike)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="set_t35_3pc" checked><span class="checkmark"></span> T3.5 3pc (Forgotten Order proc)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="set_t35_5pc" checked><span class="checkmark"></span> T3.5 5pc (+5% Stormstrike dmg)</label>
@@ -1047,6 +1049,7 @@ select { cursor: pointer; }
                 <label class="custom-checkbox"><input type="checkbox" id="item_threat_gloves"><span class="checkmark"></span> Threat Gloves (+5% threat)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_woc"><span class="checkmark"></span> Wrath of Cenarius (Nature SP%)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_sulfuras"><span class="checkmark"></span> Sulfuras proc (Fire DoT)</label>
+                <label class="custom-checkbox"><input type="checkbox" id="item_thundercall"><span class="checkmark"></span> Totem of Thundercall (nature DoT proc)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_neretzek"><span class="checkmark"></span> Neretzek proc (-armor on hit)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="item_dtc"><span class="checkmark"></span> DTC proc (Disease DoT)</label>
                 <label class="custom-checkbox"><input type="checkbox" id="orc_racial" checked onchange="updateWepSkillDisplay()"><span class="checkmark"></span> Orc Racial (+3 Axe/Mace/etc)</label>
@@ -1247,7 +1250,7 @@ function updateWepSkillDisplay() {
   // From spreadsheet chart: glance% = min(65 + (skill-300)*2, 95)
   var glancePct = Math.min(65 + (totalSkill - 300) * 2, 95);
   // Miss = 8% base - 0.04% per skill point above 300
-  var missPct = Math.max(0, 8.0 - (totalSkill - 300) * 0.20); // 0.20% per point per chart
+  var missPct = Math.max(0, 8.0 - (totalSkill - 300) * 0.04); // 0.04% per point (matches spreadsheet)
   var hitCap = missPct;
 
   var el = document.getElementById('gp_wepskill');
@@ -1719,6 +1722,9 @@ function getConfig() {
     orc_racial: getVal('orc_racial',true),
     wep_skill_book: getVal('wep_skill_book',true),
     use_berserking: getVal('use_berserking',false),
+    tal_sham_focus: getVal('tal_sham_focus', true), // Shamanistic Focus 5/5 (standard build)
+    tal_spirit_weapons: getVal('tal_spirit_weapons', true), // Spirit Weapons 1/1 (standard build)
+    item_thundercall: getVal('item_thundercall', false), // Totem of Thundercall proc
     use_bloodfury: getVal('use_bloodfury',false),
   };
 }
@@ -1792,7 +1798,7 @@ function runCoreSim(cfg, seed) {
   if(cfg.wep_skill_book)wep_skill+=5;
   wep_skill=Math.min(wep_skill,315);
   var base_miss=0.10; // FIX: 10%
-  var actual_miss=Math.max(0,base_miss-phys_hit-Math.max(0,wep_skill-300)*0.002); // 0.20% per skill point per chart
+  var actual_miss=Math.max(0,base_miss-phys_hit-Math.max(0,wep_skill-300)*0.0004); // 0.04% per skill point (vanilla, matches spreadsheet)
   var dodge_chance=cfg.attacking_behind?0:0.05;
   var glance_chance=0.40;
   // FIX: glancing damage scales with weapon skill
@@ -1816,7 +1822,9 @@ function runCoreSim(cfg, seed) {
   var magic_dmg_mult=cfg.debuff_coe?1.10:1.0;
   var conc_mult=1+cfg.tal_conc*0.02;
   var cof_mult=1+cfg.tal_cof*0.05;
-  var spell_crit_mult=1.5+cfg.tal_ele_fury*0.20;
+  var spell_crit_mult=1.5; // Base spell crit multiplier (Turtle WoW: Ele Fury is flat nature%, not crit mult)
+  // Elemental Fury: +2% nature damage per rank (flat bonus to ALL nature spells)
+  var ele_fury_mult = 1.0 + cfg.tal_ele_fury * 0.02; // 5/5 = +10% nature damage
 
   // Spellpower
   var total_sp=sp+nature_sp+fire_sp;
@@ -1833,22 +1841,31 @@ function runCoreSim(cfg, seed) {
   if(cfg.buff_bloodlust)haste+=0.20;
   var flurry_bonus=[0,0.05,0.10,0.15,0.20,0.25][cfg.tal_flurry];
 
-  // FIX: Flametongue SP coefficient is weapon-speed dependent (from spreadsheet)
-  var ft_base=29.5*cfg.wep_speed; // FIX: scales with weapon speed
-  var ft_sp_coeff=0.176+((cfg.wep_speed-1.2)/2.8)*0.084; // FIX: speed-dependent
-  ft_sp_coeff*=(1+cfg.tal_ele_wep*0.04/0.176); // Elemental Weapons bonus scales proportionally
-  // Simpler: ele_wep adds flat 0.04 per rank to the coefficient
-  ft_sp_coeff=0.176+((cfg.wep_speed-1.2)/2.8)*0.084+(cfg.tal_ele_wep*0.04);
+  // Flametongue: base = 29.5 * speed, SP coeff = speed * 0.13 (from spreadsheet)
+  // At speed 1.6: base=47.2, coeff=20.8% ✓
+  var ft_base = 29.5 * cfg.wep_speed;
+  var ft_sp_coeff = cfg.wep_speed * 0.13; // Verified: matches sheet at 1.6 speed (20.8%)
+  // Elemental Weapons 3/3 adds +4% per rank to the coefficient
+  ft_sp_coeff += cfg.tal_ele_wep * 0.04;
 
   // Threat
   var threat_mult=cfg.buff_salvation?0.70:1.0;
   if(cfg.item_subtlety)threat_mult*=0.98;
   if(cfg.item_threat_gloves)threat_mult*=1.05;
+  // Spirit Weapons (talent): -30% threat from physical attacks
+  var phys_threat_mult = threat_mult * (cfg.tal_spirit_weapons ? 0.70 : 1.0);
 
   // WF enabled
   var has_windfury=(cfg.self_imbue==='windfury')||cfg.buff_wf_totem;
   var shock_cd_base=6.0-cfg.tal_reverb*0.1;
-  var ss_cd=cfg.set_t35_5pc?7.5:8.0; // T3.5 5pc reduces SS CD
+  // Stormstrike CD: base 8.0s, T2 3pc -0.5s, T3.5 5pc -0.5s (use shortest)
+  var ss_cd = 8.0;
+  if(cfg.set_t3_2pc) ss_cd -= 0.5;   // Ten Storms 3pc: -0.5s to SS+LS
+  if(cfg.set_t35_5pc) ss_cd -= 0.5;  // Stormhowl 5pc: additional -0.5s to SS
+  ss_cd = Math.max(6.0, ss_cd);       // floor at 6s
+  // Lightning Strike base CD = 9.0s
+  // Battlegear of Ten Storms 3pc reduces LS+SS CD by 0.5s
+  var ls_cd = cfg.set_t3_2pc ? 8.5 : 9.0;
   var ele_foc=cfg.tal_ele_foc===1;
 
   // Mana regen
@@ -1859,16 +1876,17 @@ function runCoreSim(cfg, seed) {
   var mp2=mp5_val*2/5;
 
   // Lightning Shield (T3.5 3pc gives enhanced LS that procs on hits)
-  var ls_rank6_base=198;
+  var ls_rank6_base=198; // Lightning Shield Rank 7: 198 damage/globe (tooltip confirmed)
   var ls_sp_coeff=0.267;
   var ls_nat_sp_coeff=0.05;
 
   // Combat state
   var t=0, sim_duration=cfg.sim_time, mana=mana_pool;
-  var cd={ss:0,shock:0,em:180,slayer:0,spider:0,earthstrike:0,jom:0};
+  var cd={ss:0,shock:0,ls:0,em:180,slayer:0,spider:0,earthstrike:0,jom:0};
   var mana_pots_used=0,tea_used=0,rune_used=0;
   var next_swing=0, flurry_charges=0, flurry_active=false;
   var em_active=false,em_end=0;
+  var ss_debuff_charges=0; // Stormstrike: +25% Nature for next 2 sources
   var slayer_active=false,slayer_end=0;
   var spider_active=false,spider_end=0;
   var earthstrike_active=false,earthstrike_end=0;
@@ -1877,6 +1895,11 @@ function runCoreSim(cfg, seed) {
   var clearcasting=false;
   var results={total_dmg:0,total_tps:0,by_source:{},num_swings:0,num_wf:0,num_ss:0,num_shock:0};
 
+  function consumeSSDebuff() {
+    if(ss_debuff_charges > 0) { ss_debuff_charges--; return 1.25; }
+    return 1.0;
+  }
+
   function addDmg(src,dmg,is_spell,crit){
     if(!results.by_source[src])results.by_source[src]={dmg:0,count:0,crits:0};
     results.by_source[src].dmg+=dmg;
@@ -1884,9 +1907,13 @@ function runCoreSim(cfg, seed) {
     if(crit)results.by_source[src].crits++;
     results.total_dmg+=dmg;
     var thr=dmg;
-    if(is_spell)thr*=(1-cfg.tal_calm*0.10);
-    if(cfg.tal_tot_align&&is_spell)thr*=0.75;
-    results.total_tps+=thr*threat_mult;
+    if(is_spell){
+      thr*=(1-cfg.tal_calm*0.10);
+      if(cfg.tal_tot_align)thr*=0.75;
+      results.total_tps+=thr*threat_mult;
+    } else {
+      results.total_tps+=thr*phys_threat_mult; // Spirit Weapons -30% on physical
+    }
   }
 
   var gcd=1.5, next_gcd=0, step=0.02;
@@ -1961,7 +1988,7 @@ function runCoreSim(cfg, seed) {
               // WF also procs Lightning Shield
               if(cfg.self_imbue==='windfury'||cfg.buff_wf_totem){
                 if(rng.roll(0.3)){
-                  var lsd=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+                  var lsd=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult*ele_fury_mult;
                   if(!rng.roll(spell_miss)){var lsc=rng.roll(final_spell_crit);if(lsc)lsd*=spell_crit_mult;addDmg('Lightning Shield',lsd,true,lsc);}
                 }
               }
@@ -1991,7 +2018,7 @@ function runCoreSim(cfg, seed) {
         // Lightning Shield proc on auto attacks (T3.5 system)
         if(cfg.set_t35_3pc&&rng.roll(0.15)){
           if(!rng.roll(spell_miss)){
-            var lsd2=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+            var lsd2=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult*ele_fury_mult;
             var lsc2=rng.roll(final_spell_crit);
             if(lsc2)lsd2*=spell_crit_mult;
             addDmg('Lightning Shield',lsd2,true,lsc2);
@@ -2022,25 +2049,76 @@ function runCoreSim(cfg, seed) {
 
       var used=false;
 
+      // LIGHTNING STRIKE Rank 3 (Turtle WoW, CD=8.5s, 154 mana)
+      // 66% weapon damage (physical) + 22% weapon damage as Nature
+      // Also triggers empowered shield (1 charge consumed) on hit
+      if(t>=cd.ls){
+        var ls_mana_cost = 154;
+        if(mana >= ls_mana_cost){
+          mana = Math.max(0, mana - ls_mana_cost);
+          var ls_miss = rng.roll(actual_miss);
+          if(!ls_miss){
+            // Physical portion: 66% weapon damage
+            var ls_wep_dmg = rng.range(cfg.wep_min, cfg.wep_max) + active_ap/14*cfg.wep_speed;
+            var ls_phys_crit = rng.roll(final_crit);
+            var ls_phys = ls_wep_dmg * 0.66 * phys_dmg_mult;
+            if(ls_phys_crit) ls_phys *= 2;
+            addDmg('Lightning Strike',ls_phys,false,ls_phys_crit);
+            // Nature portion: 22% weapon damage as Nature magic
+            if(!rng.roll(spell_miss)){
+              var ls_nat_crit = rng.roll(final_spell_crit);
+              var ls_nat = ls_wep_dmg * 0.22 * magic_dmg_mult * cof_mult * consumeSSDebuff() * ele_fury_mult;
+              if(ls_nat_crit) ls_nat *= spell_crit_mult;
+              addDmg('Lightning Strike Nature',ls_nat,true,ls_nat_crit);
+            }
+            // Triggers empowered shield — fires the LS proc (like T3.5 3pc proc)
+            if(!rng.roll(spell_miss)){
+              var emp_crit = rng.roll(final_spell_crit);
+              var emp_dmg = (ls_rank6_base + final_nature_sp*ls_nat_sp_coeff) * (1+cfg.tal_ele_dev*0.05) * magic_dmg_mult * cof_mult * consumeSSDebuff() * ele_fury_mult;
+              if(emp_crit) emp_dmg *= spell_crit_mult;
+              addDmg('Empowered Lightning Strike',emp_dmg,true,emp_crit);
+            }
+          }
+          cd.ls = t + ls_cd;
+          next_gcd = t + gcd;
+          used = true;
+        }
+      }
+
       // STORMSTRIKE
-      if(cfg.use_ss&&t>=cd.ss){
+      if(!used&&cfg.use_ss&&t>=cd.ss){
         var ss_miss=rng.roll(actual_miss);
         if(!ss_miss){
           var ssc=rng.roll(final_crit);
-          // FIX: SS base = weapon_dmg * 1.01 (from spreadsheet)
-          var ssd=rng.range(cfg.wep_min,cfg.wep_max)*1.01+active_ap/14*cfg.wep_speed;
+          // Stormstrike: 111-112% weapon damage (tooltip confirmed), avg 111.5%
+          // Also costs 129 mana and applies +25% Nature debuff for 12s
+          var ss_mana_cost = 129 * (cfg.tal_sham_focus ? 0.60 : 1.0); // Shamanistic Focus 5/5 = -40%
+          mana = Math.max(0, mana - ss_mana_cost);
+          var ssd=rng.range(cfg.wep_min,cfg.wep_max)*1.115+active_ap/14*cfg.wep_speed;
           ssd*=phys_dmg_mult*t35_5pc_mult;
           if(ssc)ssd*=2;
           addDmg('Stormstrike',ssd,false,ssc);
           results.num_ss++;
           if(cfg.set_t3_4pc)t3_4pc_end=t+10;
-          // SS also procs LS
+          // SS applies +25% Nature debuff for next 2 nature sources
+          ss_debuff_charges=2;
+          // SS also procs T3.5 3pc Empowered LS
           if(cfg.set_t35_3pc&&rng.roll(0.15)){
             if(!rng.roll(spell_miss)){
-              var lss=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult;
+              var lss=(ls_rank6_base+final_nature_sp*ls_sp_coeff)*(1+cfg.tal_ele_dev*0.05)*magic_dmg_mult*cof_mult*ele_fury_mult;
               var lssc=rng.roll(final_spell_crit);
               if(lssc)lss*=spell_crit_mult;
               addDmg('Lightning Shield',lss,true,lssc);
+            }
+          }
+          // Totem of Thundercall: 4-tick nature DoT on SS hit
+          // 3% AP per tick, 0% SP, benefits from SS debuff (but doesn't consume charges)
+          // Does NOT benefit from Concussion. 0% crit.
+          if(cfg.item_thundercall){
+            var tc_ss_mult = 1.25; // SS debuff active on application
+            for(var tc=0;tc<4;tc++){
+              var tc_dmg = (active_ap*0.03)*magic_dmg_mult*tc_ss_mult*ele_fury_mult;
+              addDmg('Thundercall DoT',tc_dmg,true,false);
             }
           }
         }
@@ -2049,14 +2127,16 @@ function runCoreSim(cfg, seed) {
 
       // SHOCK
       if(!used&&t>=cd.shock&&cfg.shock_priority!=='none'){
-        var shock_mana=300*(1-cfg.tal_conv*0.02);
+        var es_mana = 337*(1-cfg.tal_conv*0.02); // ES Rank 7: 258 mana (Convection reduced)
+        var fs_mana = 258*(1-cfg.tal_conv*0.02); // FS Rank 5: 258 mana (Convection reduced)
+        var shock_mana = (cfg.shock_priority==='earth') ? es_mana : fs_mana;
         if(mana>=shock_mana){
           mana=Math.max(0,mana-shock_mana);
           if(!rng.roll(spell_miss)){
             if(cfg.shock_priority==='earth'){
-              // FIX: Earth Shock rank 6: base 492-520 AFTER Concussion 5
-              var es_base=rng.range(492,520);
-              var esd=(es_base+final_nature_sp*0.386)*magic_dmg_mult*cof_mult;
+              // Earth Shock Rank 7: 516-546 base (tooltip confirmed), AP + SP scaling
+              var es_base=rng.range(516,546);
+              var esd=(es_base+final_nature_sp*0.386)*magic_dmg_mult*cof_mult*consumeSSDebuff()*ele_fury_mult;
               if(clearcasting){esd*=1.10;clearcasting=false;}
               var esc=rng.roll(em_active?1.0:final_spell_crit);
               if(em_active)em_active=false;
@@ -2065,17 +2145,17 @@ function runCoreSim(cfg, seed) {
               results.num_shock++;
               if(ele_foc&&esc)clearcasting=true;
             } else {
-              // FIX: Flame Shock rank 6: initial 293, dot 82/tick x7
-              var fs_init=293+final_fire_sp*0.214+final_nature_sp*0.0;
+              // Flame Shock Rank 5 (tooltip confirmed): 223-224 initial, 290-295/15s DoT
+              var fs_init=rng.range(223,224)+final_fire_sp*0.214;
               fs_init*=(1+cfg.tal_conc*0.02)*magic_dmg_mult*cof_mult;
               if(clearcasting){fs_init*=1.10;clearcasting=false;}
               var fsic=rng.roll(em_active?1.0:fire_crit);
               if(em_active)em_active=false;
               if(fsic)fs_init*=spell_crit_mult;
               addDmg('Flame Shock',fs_init,true,fsic);
-              // FIX: DoT = 82 per tick x7 ticks (rank 6)
-              for(var tk=0;tk<7;tk++){
-                var td=(82+final_fire_sp*0.1)*magic_dmg_mult*cof_mult;
+              // DoT: 290-295 over 15s = 5 ticks of 58-59 (every 3s)
+              for(var tk=0;tk<5;tk++){
+                var td=(rng.range(58,59)+final_fire_sp*0.1)*magic_dmg_mult*cof_mult;
                 addDmg('Flame Shock DoT',td,true,false);
               }
               results.num_shock++;
